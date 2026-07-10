@@ -181,7 +181,7 @@ async function generateIdeas(){
 
   try{
     const token = await Clerk.session.getToken();
-    const res = await fetch('/.netlify/functions/generate-video-ideas', {
+    const res = await fetch('/api/generate-video-ideas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({

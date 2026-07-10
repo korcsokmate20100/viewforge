@@ -136,7 +136,7 @@ async function lookupChannel(){
 
   try{
     const token = await Clerk.session.getToken();
-    const res = await fetch('/.netlify/functions/channel-lookup', {
+    const res = await fetch('/api/channel-lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ url }),
