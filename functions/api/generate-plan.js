@@ -111,7 +111,7 @@ Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást:
 ]`;
 
     const data = await callGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] }
     );
     if (data.error) return new Response(JSON.stringify({ error: 'Túlterhelt (' + (data.error.code || '?') + '): ' + (data.error.message || 'ismeretlen hiba') + ' — kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });

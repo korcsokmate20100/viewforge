@@ -111,7 +111,7 @@ Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást, pontosan ilyen f
 }`;
 
     const data = await callGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${API_KEY}`,
       {
         contents: [{
           parts: [
