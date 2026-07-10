@@ -58,6 +58,27 @@ async function verifyClerkToken(token){
   return payload;
 }
 
+async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
+  let lastData = null;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!data.error) return data;
+
+    lastData = data;
+    const isOverloaded = response.status === 503 || response.status === 429 ||
+      /overloaded|high demand|unavailable/i.test(data.error.message || '');
+    if (!isOverloaded || attempt === maxRetries - 1) return data;
+
+    await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+  }
+  return lastData;
+}
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -108,19 +129,14 @@ Adj 3 konkrét videó-ötletet magyarul. Válaszolj KIZÁRÓLAG egy valid JSON t
   {"title": "videó cím", "why": "1 mondat, miért működhet", "thumbnail": "rövid thumbnail-ötlet", "hook": "az első pár másodperc mondata", "ctr": 1-5 közötti szám}
 ]`;
 
-    const response = await fetch(
+    const data = await callGeminiWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-      }
+      { contents: [{ parts: [{ text: prompt }] }] }
     );
 
-    const data = await response.json();
     if (data.error) {
       console.error('Gemini API hiba:', data.error);
-      return new Response(JSON.stringify({ error: 'Az AI szolgáltatás hibát adott: ' + data.error.message }), { status: 502, headers: CORS });
+      return new Response(JSON.stringify({ error: 'Az AI szolgáltatás jelenleg túlterhelt, kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });
     }
     const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
 
