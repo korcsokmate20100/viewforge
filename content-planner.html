@@ -56,6 +56,10 @@
         <div id="resultsWrap">
           <div class="result-empty">Válaszd ki a gyakoriságot balra →</div>
         </div>
+        <div class="history-section" id="historySection" style="display:none;">
+          <div class="history-title">Korábbi tervek</div>
+          <div id="historyList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -108,7 +112,57 @@ function renderPlan(plan){
         <div class="plan-title-text">${p.title}</div>
       </div>
     </div>
+  `).join('') + `<div class="copy-btn" id="copyPlanBtn">📋 Teljes terv másolása</div>`;
+
+  document.getElementById('copyPlanBtn').addEventListener('click', (e) => {
+    const text = plan.map(p => `${p.day} (${p.type}): ${p.title}`).join('\n');
+    copyToClipboard(e.target, text);
+  });
+}
+
+function copyToClipboard(btn, text){
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Másolva';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function showSkeleton(){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = Array(5).fill(0).map(() => `
+    <div class="skeleton-card"><div class="skeleton-line w40"></div><div class="skeleton-line w85"></div></div>
   `).join('');
+}
+
+async function saveHistory(uploadsPerWeek, plan){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.planHistory) ? meta.planHistory : [];
+  history.unshift({ ts: Date.now(), uploadsPerWeek, plan });
+  await saveVfMeta({ planHistory: history.slice(0, 5) });
+  renderHistory();
+}
+
+function renderHistory(){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.planHistory) ? meta.planHistory : [];
+  const section = document.getElementById('historySection');
+  if (history.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const list = document.getElementById('historyList');
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" data-idx="${i}">
+      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.uploadsPerWeek} videó/hét</div>
+      ${h.plan.map(p => p.day).join(' • ')}
+    </div>
+  `).join('');
+  list.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.dataset.idx, 10);
+      renderPlan(history[idx].plan);
+    });
+  });
 }
 
 async function generatePlan(){
@@ -117,8 +171,8 @@ async function generatePlan(){
 
   const btn = document.getElementById('generateBtn');
   const wrap = document.getElementById('resultsWrap');
-  btn.disabled = true; btn.textContent = '⚡ Generálás…';
-  wrap.innerHTML = '<div class="result-empty">AI tervez…</div>';
+  btn.disabled = true; btn.textContent = '⚡ Generálás…'; btn.classList.add('loading');
+  showSkeleton();
 
   const meta = vfMeta();
   const profile = meta.creatorProfile || {};
@@ -134,11 +188,12 @@ async function generatePlan(){
     if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
     renderPlan(data.plan);
     await incrementUsage();
+    await saveHistory(uploadsPerWeek, data.plan);
     renderUsage();
   }catch(e){
     wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;
   }finally{
-    btn.disabled = false; btn.textContent = '⚡ Terv generálása';
+    btn.disabled = false; btn.textContent = '⚡ Terv generálása'; btn.classList.remove('loading');
   }
 }
 
@@ -152,6 +207,7 @@ window.addEventListener('load', async function () {
     if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
 
     renderUsage();
+    renderHistory();
     document.getElementById('dashShell').classList.add('ready');
   } catch (e) {
     document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';

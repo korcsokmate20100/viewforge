@@ -44,6 +44,10 @@
         <div id="resultsWrap">
           <div class="result-empty">Add meg a témát balra, és nyomj Generálást →</div>
         </div>
+        <div class="history-section" id="historySection" style="display:none;">
+          <div class="history-title">Korábbi generálások</div>
+          <div id="historyList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -95,8 +99,60 @@ function renderTitles(titles){
     const card = document.createElement('div');
     card.className = 'idea-card anim-in';
     card.style.animationDelay = (i * 0.06) + 's';
-    card.innerHTML = `<div class="i-label">${stars}</div><div class="i-title">${t.title}</div>`;
+    card.innerHTML = `<div class="i-label">${stars}</div><div class="i-title">${t.title}</div><div class="copy-btn" data-text="${encodeURIComponent(t.title)}">📋 Másolás</div>`;
     wrap.appendChild(card);
+  });
+  wrap.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => copyToClipboard(btn, decodeURIComponent(btn.dataset.text)));
+  });
+}
+
+function copyToClipboard(btn, text){
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Másolva';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function showSkeleton(){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = `
+    <div class="skeleton-card"><div class="skeleton-line w60"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w85"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w40"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w85"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w60"></div></div>
+  `;
+}
+
+async function saveHistory(topic, titles){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.titlesHistory) ? meta.titlesHistory : [];
+  history.unshift({ ts: Date.now(), topic, titles });
+  await saveVfMeta({ titlesHistory: history.slice(0, 5) });
+  renderHistory();
+}
+
+function renderHistory(){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.titlesHistory) ? meta.titlesHistory : [];
+  const section = document.getElementById('historySection');
+  if (history.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const list = document.getElementById('historyList');
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" data-idx="${i}">
+      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.topic}</div>
+      ${h.titles.map(t => t.title).join(' • ')}
+    </div>
+  `).join('');
+  list.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.dataset.idx, 10);
+      renderTitles(history[idx].titles);
+    });
   });
 }
 
@@ -107,8 +163,8 @@ async function generateTitles(){
 
   const btn = document.getElementById('generateBtn');
   const wrap = document.getElementById('resultsWrap');
-  btn.disabled = true; btn.textContent = '⚡ Generálás…';
-  wrap.innerHTML = '<div class="result-empty">AI gondolkodik…</div>';
+  btn.disabled = true; btn.textContent = '⚡ Generálás…'; btn.classList.add('loading');
+  showSkeleton();
 
   const meta = vfMeta();
   const profile = meta.creatorProfile || {};
@@ -124,11 +180,12 @@ async function generateTitles(){
     if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
     renderTitles(data.titles);
     await incrementUsage();
+    await saveHistory(topic, data.titles);
     renderUsage();
   }catch(e){
     wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;
   }finally{
-    btn.disabled = false; btn.textContent = '⚡ Generálás';
+    btn.disabled = false; btn.textContent = '⚡ Generálás'; btn.classList.remove('loading');
   }
 }
 
@@ -142,6 +199,7 @@ window.addEventListener('load', async function () {
     if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
 
     renderUsage();
+    renderHistory();
     document.getElementById('dashShell').classList.add('ready');
   } catch (e) {
     document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';

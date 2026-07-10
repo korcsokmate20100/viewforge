@@ -68,6 +68,10 @@
         <div id="resultsWrap">
           <div class="result-empty">Töltsd ki a beállításokat balra, és nyomj Generálást →</div>
         </div>
+        <div class="history-section" id="historySection" style="display:none;">
+          <div class="history-title">Korábbi generálások</div>
+          <div id="historyList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -154,14 +158,66 @@ function renderIdeas(ideas){
     const card = document.createElement('div');
     card.className = 'idea-card anim-in';
     card.style.animationDelay = (i * 0.08) + 's';
+    const fullText = `${idea.title}\n\nMiért működhet: ${idea.why}\nHook: "${idea.hook}"\nThumbnail ötlet: ${idea.thumbnail}`;
     card.innerHTML = `
       <div class="i-label">🔥 VIDEÓ ÖTLET ${i+1} — ${stars}</div>
       <div class="i-title">${idea.title}</div>
       <div class="i-row"><b>Miért működhet:</b> ${idea.why}</div>
       <div class="i-row"><b>Hook:</b> "${idea.hook}"</div>
       <div class="i-row"><b>Thumbnail ötlet:</b> ${idea.thumbnail}</div>
+      <div class="copy-btn" data-text="${encodeURIComponent(fullText)}">📋 Másolás</div>
     `;
     wrap.appendChild(card);
+  });
+  wrap.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => copyToClipboard(btn, decodeURIComponent(btn.dataset.text)));
+  });
+}
+
+function copyToClipboard(btn, text){
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Másolva';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function showSkeleton(){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = `
+    <div class="skeleton-card"><div class="skeleton-line w40"></div><div class="skeleton-line w85"></div><div class="skeleton-line w60"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w40"></div><div class="skeleton-line w85"></div><div class="skeleton-line w60"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w40"></div><div class="skeleton-line w85"></div><div class="skeleton-line w60"></div></div>
+  `;
+}
+
+async function saveHistory(game, ideas){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.videoIdeasHistory) ? meta.videoIdeasHistory : [];
+  history.unshift({ ts: Date.now(), game, ideas });
+  await saveVfMeta({ videoIdeasHistory: history.slice(0, 5) });
+  renderHistory();
+}
+
+function renderHistory(){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.videoIdeasHistory) ? meta.videoIdeasHistory : [];
+  const section = document.getElementById('historySection');
+  if (history.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const list = document.getElementById('historyList');
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" data-idx="${i}">
+      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.game}</div>
+      ${h.ideas.map(idea => idea.title).join(' • ')}
+    </div>
+  `).join('');
+  list.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.dataset.idx, 10);
+      renderIdeas(history[idx].ideas);
+    });
   });
 }
 
@@ -173,8 +229,8 @@ async function generateIdeas(){
 
   const btn = document.getElementById('generateBtn');
   const wrap = document.getElementById('resultsWrap');
-  btn.disabled = true; btn.textContent = '⚡ Generálás…';
-  wrap.innerHTML = '<div class="result-empty">AI gondolkodik…</div>';
+  btn.disabled = true; btn.textContent = '⚡ Generálás…'; btn.classList.add('loading');
+  showSkeleton();
 
   const meta = vfMeta();
   const profile = meta.creatorProfile || {};
@@ -198,11 +254,12 @@ async function generateIdeas(){
 
     renderIdeas(data.ideas);
     await incrementUsage();
+    await saveHistory(game, data.ideas);
     renderUsage();
   }catch(e){
     wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}<br><span style="font-size:12px;">Ha ez a fájl még nincs élesítve, ellenőrizd a Netlify Function és a GEMINI_API_KEY beállítását.</span></div>`;
   }finally{
-    btn.disabled = false; btn.textContent = '⚡ Generálás';
+    btn.disabled = false; btn.textContent = '⚡ Generálás'; btn.classList.remove('loading');
   }
 }
 
@@ -224,6 +281,7 @@ window.addEventListener('load', async function () {
     });
 
     renderUsage();
+    renderHistory();
     document.getElementById('dashShell').classList.add('ready');
   } catch (e) {
     document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';

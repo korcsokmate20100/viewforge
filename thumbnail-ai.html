@@ -58,6 +58,10 @@
         <div id="resultsWrap">
           <div class="result-empty">Tölts fel egy képet balra →</div>
         </div>
+        <div class="history-section" id="historySection" style="display:none;">
+          <div class="history-title">Korábbi elemzések</div>
+          <div id="historyList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -126,13 +130,62 @@ dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('dr
 function renderResult(result){
   const wrap = document.getElementById('resultsWrap');
   const color = result.score >= 70 ? 'var(--mint)' : result.score >= 40 ? 'var(--gold)' : 'var(--hot)';
+  const fullText = `Thumbnail pontszám: ${result.score}/100\n\nJó:\n${(result.good||[]).map(g=>'- '+g).join('\n')}\n\nJavítandó:\n${(result.bad||[]).map(b=>'- '+b).join('\n')}\n\nJavaslatok:\n${(result.suggestions||[]).map(s=>'- '+s).join('\n')}`;
   wrap.innerHTML = `
     <div class="score-ring" style="color:${color};">${result.score}/100</div>
     <div class="score-label">Thumbnail pontszám</div>
     <div class="fb-section"><div class="fb-title" style="color:var(--mint);">✓ JÓ</div><ul class="fb-list">${(result.good||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
     <div class="fb-section"><div class="fb-title" style="color:var(--hot);">✕ JAVÍTANDÓ</div><ul class="fb-list">${(result.bad||[]).map(b=>`<li>${b}</li>`).join('')}</ul></div>
     <div class="fb-section"><div class="fb-title" style="color:var(--gold);">💡 JAVASLATOK</div><ul class="fb-list">${(result.suggestions||[]).map(s=>`<li>${s}</li>`).join('')}</ul></div>
+    <div class="copy-btn" id="copyResultBtn">📋 Elemzés másolása</div>
   `;
+  document.getElementById('copyResultBtn').addEventListener('click', (e) => copyToClipboard(e.target, fullText));
+}
+
+function copyToClipboard(btn, text){
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Másolva';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function showSkeleton(){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = `
+    <div class="skeleton-card" style="text-align:center;"><div class="skeleton-line w40" style="margin:0 auto 10px;height:36px;"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w60"></div><div class="skeleton-line w85"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w60"></div><div class="skeleton-line w40"></div></div>
+  `;
+}
+
+async function saveHistory(result){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.thumbnailHistory) ? meta.thumbnailHistory : [];
+  history.unshift({ ts: Date.now(), score: result.score, good: result.good, bad: result.bad, suggestions: result.suggestions });
+  await saveVfMeta({ thumbnailHistory: history.slice(0, 5) });
+  renderHistory();
+}
+
+function renderHistory(){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.thumbnailHistory) ? meta.thumbnailHistory : [];
+  const section = document.getElementById('historySection');
+  if (history.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const list = document.getElementById('historyList');
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" data-idx="${i}">
+      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.score}/100 pont</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.dataset.idx, 10);
+      renderResult(history[idx]);
+    });
+  });
 }
 
 async function analyzeThumbnail(){
@@ -141,8 +194,8 @@ async function analyzeThumbnail(){
 
   const btn = document.getElementById('generateBtn');
   const wrap = document.getElementById('resultsWrap');
-  btn.disabled = true; btn.textContent = '⚡ Elemzés…';
-  wrap.innerHTML = '<div class="result-empty">AI elemzi a képet…</div>';
+  btn.disabled = true; btn.textContent = '⚡ Elemzés…'; btn.classList.add('loading');
+  showSkeleton();
 
   try{
     const token = await Clerk.session.getToken();
@@ -155,11 +208,12 @@ async function analyzeThumbnail(){
     if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
     renderResult(data);
     await incrementUsage();
+    await saveHistory(data);
     renderUsage();
   }catch(e){
     wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;
   }finally{
-    btn.disabled = false; btn.textContent = '⚡ Elemzés';
+    btn.disabled = false; btn.textContent = '⚡ Elemzés'; btn.classList.remove('loading');
   }
 }
 
@@ -173,6 +227,7 @@ window.addEventListener('load', async function () {
     if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
 
     renderUsage();
+    renderHistory();
     document.getElementById('dashShell').classList.add('ready');
   } catch (e) {
     document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';

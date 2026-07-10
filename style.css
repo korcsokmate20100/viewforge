@@ -198,3 +198,28 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .idea-card .i-row b{color:var(--text);}
 .usage-pill{font-size:12px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;background:#150F1D;border:1px solid var(--line);padding:4px 11px;border-radius:99px;}
 .limit-msg{font-size:12.5px;color:var(--gold);background:rgba(255,193,69,0.1);border:1px solid rgba(255,193,69,0.3);padding:9px 12px;border-radius:9px;margin-top:12px;line-height:1.5;}
+
+/* ---------- Finomabb animációk ---------- */
+@keyframes cardPop{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+.idea-card.anim-in{animation-name:cardPop;animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.8,.3,1);}
+.btn:active{transform:scale(0.97);}
+@keyframes btnGlow{0%,100%{box-shadow:0 8px 22px -8px rgba(155,95,255,0.55);}50%{box-shadow:0 10px 32px -4px rgba(155,95,255,0.9);}}
+.btn-primary.loading{animation:btnGlow 1.3s ease-in-out infinite;}
+
+/* Betöltő skeleton */
+@keyframes skeletonPulse{0%,100%{opacity:.35;}50%{opacity:.75;}}
+.skeleton-line{height:13px;background:var(--surface-soft);border-radius:6px;margin-bottom:10px;animation:skeletonPulse 1.3s ease-in-out infinite;}
+.skeleton-line.w60{width:60%;} .skeleton-line.w85{width:85%;} .skeleton-line.w40{width:40%;}
+.skeleton-card{padding:16px 0;}
+
+/* Másolás gomb */
+.copy-btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);cursor:pointer;padding:4px 10px;border-radius:7px;border:1px solid var(--line);transition:all .15s ease;background:transparent;margin-top:10px;}
+.copy-btn:hover{color:var(--text);border-color:#4a3f5c;}
+.copy-btn.copied{color:var(--mint);border-color:var(--mint);background:rgba(61,220,151,0.08);}
+
+/* Korábbi generálások */
+.history-section{margin-top:26px;padding-top:20px;border-top:1px solid var(--line);}
+.history-title{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
+.history-item{padding:10px 13px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;cursor:pointer;font-size:12.5px;color:var(--text-dim);transition:all .2s ease;}
+.history-item:hover{border-color:var(--brand);color:var(--text);background:var(--brand-soft);}
+.history-item .h-time{font-size:10.5px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
