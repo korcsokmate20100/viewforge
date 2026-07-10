@@ -104,7 +104,7 @@ Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást, pontosan ilyen f
 }`;
 
     const data = await callGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
       {
         contents: [{
           parts: [
@@ -112,7 +112,6 @@ Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást, pontosan ilyen f
             { inline_data: { mime_type: mimeType || 'image/jpeg', data: imageBase64 } },
           ],
         }],
-        generationConfig: { thinkingConfig: { thinkingLevel: 'LOW' } },
       }
     );
     if (data.error) return new Response(JSON.stringify({ error: 'Az AI szolgáltatás jelenleg túlterhelt, kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });

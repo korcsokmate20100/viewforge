@@ -130,8 +130,8 @@ Adj 3 konkrét videó-ötletet magyarul. Válaszolj KIZÁRÓLAG egy valid JSON t
 ]`;
 
     const data = await callGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`,
-      { contents: [{ parts: [{ text: prompt }] }], generationConfig: { thinkingConfig: { thinkingLevel: 'LOW' } } }
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
+      { contents: [{ parts: [{ text: prompt }] }] }
     );
 
     if (data.error) {
