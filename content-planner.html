@@ -186,9 +186,10 @@ async function generatePlan(){
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
-    renderPlan(data.plan);
+    const trimmedPlan = (data.plan || []).slice(0, parseInt(uploadsPerWeek, 10));
+    renderPlan(trimmedPlan);
     await incrementUsage();
-    await saveHistory(uploadsPerWeek, data.plan);
+    await saveHistory(uploadsPerWeek, trimmedPlan);
     renderUsage();
   }catch(e){
     wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;

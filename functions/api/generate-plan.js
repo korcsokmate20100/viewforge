@@ -98,14 +98,16 @@ export async function onRequestPost(context){
 Csatorna: ${channelName || 'ismeretlen'}
 Játék: ${game || 'ismeretlen'}
 Stílus: ${(styles || []).join(', ') || 'nincs megadva'}
-Heti feltöltés: ${uploadsPerWeek} videó/hét
+Heti feltöltés: PONTOSAN ${uploadsPerWeek} videó/hét — ez a legfontosabb szabály.
 
-Építs egy stratégiailag átgondolt heti tervet:
-- Keverd a tartalom-típusokat (pl. ne legyen mind ugyanaz a formátum) — Short a napi elérésért, egy nagyobb "húzó" videó a hét közepén/végén, esetleg stream/közösségi tartalom
-- A legjobb napokra időzítsd a legfontosabb tartalmat (hétfő/szerda/péntek/hétvége a gaming közönségnél jellemzően erős)
+KRITIKUS SZABÁLY: a válasz JSON tömbnek PONTOSAN ${uploadsPerWeek} elemet kell tartalmaznia — ennyi feltöltés van hetente, sem több, sem kevesebb. NE tölts ki minden napot a héten, csak ${uploadsPerWeek} napot válassz ki, amikorra tényleg jut tartalom.
+
+Építs egy stratégiailag átgondolt tervet erre a(z) ${uploadsPerWeek} napra:
+- Keverd a tartalom-típusokat, ha 1-nél több nap van (pl. ne legyen mind ugyanaz a formátum)
+- A legjobb napokra időzítsd (hétfő/szerda/péntek/hétvége a gaming közönségnél jellemzően erős)
 - Minden elem legyen KONKRÉT ötlet, ne csak "készíts egy videót" jellegű általánosság
 
-Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást:
+Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, PONTOSAN ${uploadsPerWeek} elemmel, semmi mást:
 [
   {"day": "nap magyarul", "type": "Short / Fő videó / Stream / stb.", "title": "konkrét tartalom-ötlet"}
 ]`;
