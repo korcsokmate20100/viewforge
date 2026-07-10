@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ViewForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page-fade">
+
+<div class="wrap" style="max-width:1120px;padding-top:0;">
+  <div class="dash-top">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+    <div id="userButton"></div>
+  </div>
+
+  <div class="tool-shell" id="dashShell">
+
+    <!-- Onboarding: ha meg nincs csatorna-profil -->
+    <div class="onboard-card" id="onboardCard" style="display:none;">
+      <div class="onboard-icon">🎮</div>
+      <div class="onboard-title">Hozd létre a Creator Profilodat</div>
+      <div class="onboard-sub">Illeszd be a YouTube csatornád linkjét, és mi kitöltjük a részleteket helyetted.</div>
+      <input type="text" class="onboard-input" id="channelUrlInput" placeholder="pl. https://www.youtube.com/@CsatornaNeved" />
+      <button class="btn btn-primary" id="lookupBtn" style="width:100%;justify-content:center;" onclick="lookupChannel()">🔍 Csatorna elemzése</button>
+      <div class="onboard-msg" id="onboardMsg"></div>
+
+      <div id="profileFormWrap" style="display:none;margin-top:20px;text-align:left;">
+        <label class="field-label">Fő játék</label>
+        <input type="text" class="field-input" id="mainGameInput" placeholder="pl. Minecraft, Fortnite, Valorant" />
+        <label class="field-label">Stílus (válassz 1-2-t)</label>
+        <div class="chip-row" id="styleChips">
+          <div class="chip" data-style="Vicces">😂 Vicces</div>
+          <div class="chip" data-style="Kihívás">🎯 Kihívás</div>
+          <div class="chip" data-style="Story">📖 Story</div>
+          <div class="chip" data-style="Tutorial">🎓 Tutorial</div>
+          <div class="chip" data-style="Competitive">🏆 Competitive</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="createProfile()">Profil létrehozása</button>
+      </div>
+    </div>
+
+    <!-- Fő dashboard: ha már van profil -->
+    <div id="mainDash" style="display:none;">
+      <div class="dash-greet anim-in" style="margin-bottom:18px;">Üdv újra<span id="userName">!</span> 🎮</div>
+
+      <div class="plan-bar anim-in" style="animation-delay:.03s;">
+        <div class="plan-bar-left">
+          <span class="plan-bar-badge" id="planBadge">Free trial</span>
+          <span class="plan-bar-limits"><b id="usageText">0</b> / <span id="usageLimitText">5</span> generálás ma</span>
+        </div>
+        <div class="plan-switch-row" id="planSwitchRow"></div>
+      </div>
+
+      <div class="level-card anim-in" style="animation-delay:.06s;">
+        <div class="channel-chip">
+          <img id="channelThumb" src="" alt="" style="display:none;" />
+          <div>
+            <div class="c-name" id="channelNameLabel">—</div>
+            <div class="c-meta" id="channelMetaLabel">—</div>
+          </div>
+        </div>
+        <div class="level-info">
+          <div class="level-title">Creator Level</div>
+          <div class="level-track"><div class="level-fill" id="levelFill"></div></div>
+          <div class="level-pct" id="levelPctText">0%</div>
+        </div>
+      </div>
+
+      <div class="ws-title" style="margin-bottom:14px;color:var(--text-dim);font-size:13px;text-transform:uppercase;letter-spacing:.04em;">Eszközeid</div>
+      <div class="tools-nav-grid">
+        <a class="tool-nav-card anim-in" style="animation-delay:.09s;" href="video-ideas.html">
+          <div class="tool-ico">💡</div>
+          <div class="tool-name">Video Ideas</div>
+          <div class="tool-desc">Konkrét videó-ötletek a játékodhoz</div>
+        </a>
+        <div class="tool-nav-card soon anim-in" style="animation-delay:.12s;">
+          <div class="tool-ico">🔥</div>
+          <div class="tool-name">Viral Titles <span class="soon-badge">hamarosan</span></div>
+          <div class="tool-desc">Cím-variációk CTR-becsléssel</div>
+        </div>
+        <div class="tool-nav-card soon anim-in" style="animation-delay:.15s;">
+          <div class="tool-ico">🖼</div>
+          <div class="tool-name">Thumbnail AI <span class="soon-badge">hamarosan</span></div>
+          <div class="tool-desc">Borítókép elemzés és pontszám</div>
+        </div>
+        <div class="tool-nav-card soon anim-in" style="animation-delay:.18s;">
+          <div class="tool-ico">📅</div>
+          <div class="tool-name">Content Planner <span class="soon-badge">hamarosan</span></div>
+          <div class="tool-desc">Heti tartalomterv</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!--
+  ====== CLERK BEÁLLÍTÁS ======
+  Ugyanazt a két értéket írd ide, amit az index.html és sign-in.html fájlba is beírtál.
+-->
+<script defer crossorigin="anonymous" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
+
+<script>
+const PLANS = [
+  {id:'free', name:'Free trial', dailyLimit:5, monthlyLimit:null},
+  {id:'basic', name:'Basic', dailyLimit:null, monthlyLimit:100},
+  {id:'pro', name:'Pro', dailyLimit:null, monthlyLimit:Infinity},
+];
+function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
+
+let selectedStyles = [];
+
+document.getElementById('styleChips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  chip.classList.toggle('on');
+  const style = chip.dataset.style;
+  if (selectedStyles.includes(style)) selectedStyles = selectedStyles.filter(s => s !== style);
+  else selectedStyles.push(style);
+});
+
+async function lookupChannel(){
+  const input = document.getElementById('channelUrlInput');
+  const msg = document.getElementById('onboardMsg');
+  const btn = document.getElementById('lookupBtn');
+  const url = input.value.trim();
+  if (!url){ msg.textContent = 'Illeszd be a csatornád linkjét.'; msg.style.color = 'var(--gold)'; return; }
+
+  btn.disabled = true; btn.textContent = '🔍 Keresés…';
+  msg.style.color = 'var(--text-dim)';
+  msg.textContent = 'Csatorna adatainak lekérése…';
+
+  try{
+    const token = await Clerk.session.getToken();
+    const res = await fetch('/.netlify/functions/channel-lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
+
+    window.__foundChannel = data;
+    msg.style.color = 'var(--mint)';
+    msg.textContent = `✅ Megtaláltuk: ${data.name}${data.subscriberCount ? ' (' + data.subscriberCount.toLocaleString() + ' feliratkozó)' : ''}`;
+    document.getElementById('profileFormWrap').style.display = 'block';
+  }catch(e){
+    msg.style.color = '#FF4D8D';
+    msg.textContent = '❌ ' + e.message + ' — vagy add meg kézzel a csatorna nevét lent.';
+    window.__foundChannel = { name: url, thumbnail: '', subscriberCount: null, channelId: null };
+    document.getElementById('profileFormWrap').style.display = 'block';
+  }finally{
+    btn.disabled = false; btn.textContent = '🔍 Csatorna elemzése';
+  }
+}
+
+/** ViewForge adatai külön "rekeszben" élnek, hogy ne ütközzenek más projektek adataival ugyanazon a Clerk fiókon. */
+function vfMeta(){
+  return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {};
+}
+async function saveVfMeta(partial){
+  const current = vfMeta();
+  await Clerk.user.update({
+    unsafeMetadata: {
+      ...Clerk.user.unsafeMetadata,
+      viewforge: { ...current, ...partial },
+    }
+  });
+}
+
+async function createProfile(){
+  const game = document.getElementById('mainGameInput').value.trim();
+  if (!game){ alert('Add meg a fő játékodat!'); return; }
+  const channel = window.__foundChannel || {};
+
+  const params = new URLSearchParams(window.location.search);
+  const plan = vfMeta().plan || params.get('plan') || 'free';
+
+  await saveVfMeta({
+    plan,
+    creatorProfile: {
+      channelName: channel.name,
+      thumbnail: channel.thumbnail,
+      subscriberCount: channel.subscriberCount,
+      channelId: channel.channelId,
+      mainGame: game,
+      styles: selectedStyles,
+    },
+    usage: { count: 0, date: new Date().toISOString().slice(0,10) },
+  });
+  renderDashboard();
+}
+
+function renderDashboard(){
+  const meta = vfMeta();
+  const profile = meta.creatorProfile;
+
+  if (!profile){
+    document.getElementById('onboardCard').style.display = 'block';
+    document.getElementById('mainDash').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('onboardCard').style.display = 'none';
+  document.getElementById('mainDash').style.display = 'block';
+
+  document.getElementById('userName').textContent = ', ' + (Clerk.user.firstName || Clerk.user.username || '') + '!';
+
+  const info = planInfo(meta.plan || 'free');
+  document.getElementById('planBadge').textContent = info.name;
+
+  const row = document.getElementById('planSwitchRow');
+  row.innerHTML = '';
+  PLANS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'plan-pill' + (p.id === (meta.plan || 'free') ? ' active' : '');
+    el.textContent = p.name;
+    el.addEventListener('click', async () => {
+      await saveVfMeta({ plan: p.id });
+      renderDashboard();
+    });
+    row.appendChild(el);
+  });
+
+  const today = new Date().toISOString().slice(0,10);
+  const usage = (meta.usage && meta.usage.date === today) ? meta.usage.count : 0;
+  document.getElementById('usageText').textContent = usage;
+  document.getElementById('usageLimitText').textContent = info.dailyLimit ? info.dailyLimit : (info.monthlyLimit === Infinity ? '∞' : info.monthlyLimit + '/hó');
+
+  if (profile.thumbnail){
+    document.getElementById('channelThumb').src = profile.thumbnail;
+    document.getElementById('channelThumb').style.display = 'block';
+  }
+  document.getElementById('channelNameLabel').textContent = profile.channelName || '—';
+  document.getElementById('channelMetaLabel').textContent =
+    (profile.mainGame || '') + (profile.subscriberCount ? ' • ' + profile.subscriberCount.toLocaleString() + ' feliratkozó' : '');
+
+  const levelPct = Math.min(100, Math.round(((profile.subscriberCount || 0) / 10000) * 100));
+  requestAnimationFrame(() => { document.getElementById('levelFill').style.width = levelPct + '%'; });
+  document.getElementById('levelPctText').textContent = levelPct + '% a következő szintig';
+}
+
+window.addEventListener('load', async function () {
+  try {
+    await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
+
+    Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+    renderDashboard();
+    document.getElementById('dashShell').classList.add('ready');
+  } catch (e) {
+    document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
+    console.error(e);
+  }
+});
+</script>
+
+</body>
+</html>

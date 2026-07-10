@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Idea Generator — ViewForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page-fade">
+
+<div class="wrap" style="max-width:1000px;padding-top:0;">
+  <div class="dash-top">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+    <div id="userButton"></div>
+  </div>
+
+  <div class="tool-shell" id="dashShell">
+    <a class="back-link" href="dashboard.html">← Vissza a dashboardra</a>
+
+    <div class="anim-in" style="margin-bottom:22px;">
+      <div class="sec-eyebrow">💡 Video Idea Generator</div>
+      <h1 class="sec-title" style="font-size:24px;">Kapj 3 konkrét videó-ötletet</h1>
+    </div>
+
+    <div class="tool-grid-2col">
+      <div class="panel anim-in" style="animation-delay:.05s;">
+        <div class="panel-title">Beállítások</div>
+        <div class="panel-sub">A profilod alapján előre kitöltve — bármikor módosíthatod.</div>
+
+        <label class="field-label">Játék</label>
+        <input type="text" class="field-input" id="gameInput" placeholder="pl. Fortnite" />
+
+        <label class="field-label">Platform</label>
+        <select class="field-select" id="platformSelect">
+          <option>YouTube</option>
+          <option>TikTok</option>
+          <option>Twitch</option>
+        </select>
+
+        <label class="field-label">Cél</label>
+        <select class="field-select" id="goalSelect">
+          <option>Több nézettség</option>
+          <option>Több feliratkozó</option>
+          <option>Hosszabb watch time</option>
+          <option>Viralitás</option>
+        </select>
+
+        <label class="field-label">Stílus</label>
+        <div class="chip-row" id="styleChips">
+          <div class="chip" data-style="Vicces">😂 Vicces</div>
+          <div class="chip" data-style="Kihívás">🎯 Kihívás</div>
+          <div class="chip" data-style="Story">📖 Story</div>
+          <div class="chip" data-style="Tutorial">🎓 Tutorial</div>
+          <div class="chip" data-style="Competitive">🏆 Competitive</div>
+        </div>
+
+        <button class="btn btn-primary" id="generateBtn" style="width:100%;justify-content:center;margin-top:6px;" onclick="generateIdeas()">⚡ Generálás</button>
+        <div id="limitMsg" class="limit-msg" style="display:none;"></div>
+      </div>
+
+      <div class="panel anim-in" style="animation-delay:.1s;">
+        <div class="panel-title">Ötletek</div>
+        <div class="panel-sub">
+          <span class="usage-pill" id="usagePill">0 / 5 ma</span>
+        </div>
+        <div id="resultsWrap">
+          <div class="result-empty">Töltsd ki a beállításokat balra, és nyomj Generálást →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  ====== CLERK BEÁLLÍTÁS ======
+  Ugyanazt a két értéket írd ide, amit a többi fájlba is beírtál.
+-->
+<script defer crossorigin="anonymous" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
+
+<script>
+const PLANS = [
+  {id:'free', name:'Free trial', dailyLimit:5, monthlyLimit:null},
+  {id:'basic', name:'Basic', dailyLimit:null, monthlyLimit:100},
+  {id:'pro', name:'Pro', dailyLimit:null, monthlyLimit:Infinity},
+];
+function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
+
+let selectedStyles = [];
+document.getElementById('styleChips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  chip.classList.toggle('on');
+  const style = chip.dataset.style;
+  if (selectedStyles.includes(style)) selectedStyles = selectedStyles.filter(s => s !== style);
+  else selectedStyles.push(style);
+});
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function currentUsage(meta){
+  return (meta.usage && meta.usage.date === todayStr()) ? meta.usage.count : 0;
+}
+
+/** ViewForge adatai külön "rekeszben" élnek, hogy ne ütközzenek más projektek adataival ugyanazon a Clerk fiókon. */
+function vfMeta(){
+  return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {};
+}
+async function saveVfMeta(partial){
+  const current = vfMeta();
+  await Clerk.user.update({
+    unsafeMetadata: {
+      ...Clerk.user.unsafeMetadata,
+      viewforge: { ...current, ...partial },
+    }
+  });
+}
+
+function renderUsage(){
+  const meta = vfMeta();
+  const info = planInfo(meta.plan || 'free');
+  const used = currentUsage(meta);
+  const limitText = info.dailyLimit ? (used + ' / ' + info.dailyLimit + ' ma')
+    : (info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó');
+  document.getElementById('usagePill').textContent = limitText;
+
+  const atLimit = info.dailyLimit ? used >= info.dailyLimit : (info.monthlyLimit !== Infinity && used >= info.monthlyLimit);
+  const limitMsg = document.getElementById('limitMsg');
+  const btn = document.getElementById('generateBtn');
+  if (atLimit){
+    limitMsg.style.display = 'block';
+    limitMsg.textContent = `Elérted a(z) ${info.name} csomag napi/havi limitjét. Válts nagyobb csomagra a dashboardon.`;
+    btn.disabled = true;
+  } else {
+    limitMsg.style.display = 'none';
+    btn.disabled = false;
+  }
+  return atLimit;
+}
+
+async function incrementUsage(){
+  const meta = vfMeta();
+  const used = currentUsage(meta);
+  await saveVfMeta({ usage: { count: used + 1, date: todayStr() } });
+}
+
+function renderIdeas(ideas){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = '';
+  ideas.forEach((idea, i) => {
+    const stars = '⭐'.repeat(Math.max(1, Math.min(5, idea.ctr || 3)));
+    const card = document.createElement('div');
+    card.className = 'idea-card anim-in';
+    card.style.animationDelay = (i * 0.08) + 's';
+    card.innerHTML = `
+      <div class="i-label">🔥 VIDEÓ ÖTLET ${i+1} — ${stars}</div>
+      <div class="i-title">${idea.title}</div>
+      <div class="i-row"><b>Miért működhet:</b> ${idea.why}</div>
+      <div class="i-row"><b>Hook:</b> "${idea.hook}"</div>
+      <div class="i-row"><b>Thumbnail ötlet:</b> ${idea.thumbnail}</div>
+    `;
+    wrap.appendChild(card);
+  });
+}
+
+async function generateIdeas(){
+  if (renderUsage()) return; // limit elérve
+
+  const game = document.getElementById('gameInput').value.trim();
+  if (!game){ alert('Add meg a játékot!'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  const wrap = document.getElementById('resultsWrap');
+  btn.disabled = true; btn.textContent = '⚡ Generálás…';
+  wrap.innerHTML = '<div class="result-empty">AI gondolkodik…</div>';
+
+  const meta = vfMeta();
+  const profile = meta.creatorProfile || {};
+
+  try{
+    const token = await Clerk.session.getToken();
+    const res = await fetch('/.netlify/functions/generate-video-ideas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        game,
+        platform: document.getElementById('platformSelect').value,
+        channelSize: profile.subscriberCount,
+        styles: selectedStyles,
+        goal: document.getElementById('goalSelect').value,
+        channelName: profile.channelName,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
+
+    renderIdeas(data.ideas);
+    await incrementUsage();
+    renderUsage();
+  }catch(e){
+    wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}<br><span style="font-size:12px;">Ha ez a fájl még nincs élesítve, ellenőrizd a Netlify Function és az ANTHROPIC_API_KEY beállítását.</span></div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = '⚡ Generálás';
+  }
+}
+
+window.addEventListener('load', async function () {
+  try {
+    await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
+
+    Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+
+    const meta = vfMeta();
+    const profile = meta.creatorProfile;
+    if (!profile) { window.location.href = 'dashboard.html'; return; }
+
+    document.getElementById('gameInput').value = profile.mainGame || '';
+    (profile.styles || []).forEach(s => {
+      const chip = document.querySelector('.chip[data-style="' + s + '"]');
+      if (chip) { chip.classList.add('on'); selectedStyles.push(s); }
+    });
+
+    renderUsage();
+    document.getElementById('dashShell').classList.add('ready');
+  } catch (e) {
+    document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
+    console.error(e);
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bejelentkezés — ViewForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+    <a class="btn btn-ghost btn-sm" href="index.html">← Vissza a főoldalra</a>
+  </div>
+</nav>
+
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="sec-eyebrow" style="justify-content:center;display:flex;">BEJELENTKEZÉS</div>
+    <h1 class="sec-title" style="font-size:26px;margin-bottom:28px;">Lépj be a ViewForge-ba</h1>
+    <div id="clerk-sign-in">
+      <div class="auth-loading" id="authLoading">Betöltés…</div>
+    </div>
+  </div>
+</div>
+
+<!--
+  ====== CLERK BEÁLLÍTÁS ======
+  Ugyanazt a két értéket írd ide, amit az index.html és dashboard.html fájlba is beírtál.
+-->
+<script defer crossorigin="anonymous" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
+
+<script>
+window.addEventListener('load', async function () {
+  try {
+    await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get('plan');
+    const dashUrl = 'dashboard.html' + (planParam ? ('?plan=' + planParam) : '');
+
+    if (Clerk.isSignedIn) {
+      window.location.href = dashUrl;
+      return;
+    }
+
+    document.getElementById('authLoading').remove();
+    Clerk.mountSignIn(document.getElementById('clerk-sign-in'), {
+      forceRedirectUrl: dashUrl,
+      signUpForceRedirectUrl: dashUrl
+    });
+  } catch (e) {
+    document.getElementById('authLoading').textContent =
+      'A Clerk még nincs beállítva ezen az oldalon — cseréld le a fancy-bullfrog-66.clerk.accounts.dev és pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA helyeket a saját Clerk kulcsaidra.';
+    console.error(e);
+  }
+});
+</script>
+
+</body>
+</html>
