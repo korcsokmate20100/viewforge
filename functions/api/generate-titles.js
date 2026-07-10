@@ -117,7 +117,7 @@ Adj 5 különböző címváltozatot magyarul. Válaszolj KIZÁRÓLAG egy valid J
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] }
     );
-    if (data.error) return new Response(JSON.stringify({ error: 'Az AI szolgáltatás jelenleg túlterhelt, kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });
+    if (data.error) return new Response(JSON.stringify({ error: 'Túlterhelt (' + (data.error.code || '?') + '): ' + (data.error.message || 'ismeretlen hiba') + ' — kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });
     const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
 
     let titles;

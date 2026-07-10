@@ -121,7 +121,7 @@ Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást, pontosan ilyen f
         }],
       }
     );
-    if (data.error) return new Response(JSON.stringify({ error: 'Az AI szolgáltatás jelenleg túlterhelt, kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });
+    if (data.error) return new Response(JSON.stringify({ error: 'Túlterhelt (' + (data.error.code || '?') + '): ' + (data.error.message || 'ismeretlen hiba') + ' — kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });
     const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
 
     let result;
