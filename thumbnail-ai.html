@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thumbnail Analyzer — ViewForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.drop-zone{border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center;cursor:pointer;transition:border-color .2s ease;margin-bottom:16px;}
+.drop-zone:hover, .drop-zone.drag{border-color:var(--brand);}
+.drop-zone img{max-width:100%;max-height:220px;border-radius:10px;margin-top:12px;}
+.score-ring{font-family:'Space Grotesk',sans-serif;font-size:44px;font-weight:700;text-align:center;margin-bottom:6px;}
+.score-label{text-align:center;color:var(--text-dim);font-size:12.5px;margin-bottom:20px;}
+.fb-section{margin-bottom:14px;}
+.fb-title{font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;}
+.fb-list{list-style:none;padding:0;margin:0;font-size:13.5px;}
+.fb-list li{padding:5px 0;}
+</style>
+</head>
+<body class="page-fade">
+
+<div class="wrap" style="max-width:1000px;padding-top:0;">
+  <div class="dash-top">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+    <div id="userButton"></div>
+  </div>
+
+  <div class="tool-shell" id="dashShell">
+    <a class="back-link" href="dashboard.html">← Vissza a dashboardra</a>
+
+    <div class="anim-in" style="margin-bottom:22px;">
+      <div class="sec-eyebrow">🖼 Thumbnail Analyzer</div>
+      <h1 class="sec-title" style="font-size:24px;">Kapj pontszámot és javítási tippeket</h1>
+    </div>
+
+    <div class="tool-grid-2col">
+      <div class="panel anim-in" style="animation-delay:.05s;">
+        <div class="panel-title">Töltsd fel a borítóképed</div>
+        <div class="panel-sub">JPG vagy PNG, max. 5 MB</div>
+
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div id="dropText">📁 Kattints ide vagy húzd ide a képet</div>
+          <img id="previewImg" style="display:none;" />
+        </div>
+        <input type="file" id="fileInput" accept="image/jpeg,image/png" style="display:none;" />
+
+        <button class="btn btn-primary" id="generateBtn" style="width:100%;justify-content:center;" onclick="analyzeThumbnail()" disabled>⚡ Elemzés</button>
+        <div id="limitMsg" class="limit-msg" style="display:none;"></div>
+      </div>
+
+      <div class="panel anim-in" style="animation-delay:.1s;">
+        <div class="panel-title">Eredmény</div>
+        <div class="panel-sub">
+          <span class="usage-pill" id="usagePill">0 / 5 ma</span>
+        </div>
+        <div id="resultsWrap">
+          <div class="result-empty">Tölts fel egy képet balra →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script defer crossorigin="anonymous" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
+
+<script>
+const PLANS = [
+  {id:'free', name:'Free trial', dailyLimit:5, monthlyLimit:null},
+  {id:'basic', name:'Basic', dailyLimit:null, monthlyLimit:100},
+  {id:'pro', name:'Pro', dailyLimit:null, monthlyLimit:Infinity},
+];
+function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function vfMeta(){ return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {}; }
+async function saveVfMeta(partial){
+  const current = vfMeta();
+  await Clerk.user.update({ unsafeMetadata: { ...Clerk.user.unsafeMetadata, viewforge: { ...current, ...partial } } });
+}
+function currentUsage(meta){ return (meta.usage && meta.usage.date === todayStr()) ? meta.usage.count : 0; }
+
+function renderUsage(){
+  const meta = vfMeta();
+  const info = planInfo(meta.plan || 'free');
+  const used = currentUsage(meta);
+  const limitText = info.dailyLimit ? (used + ' / ' + info.dailyLimit + ' ma') : (info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó');
+  document.getElementById('usagePill').textContent = limitText;
+  const atLimit = info.dailyLimit ? used >= info.dailyLimit : (info.monthlyLimit !== Infinity && used >= info.monthlyLimit);
+  const limitMsg = document.getElementById('limitMsg');
+  if (atLimit){ limitMsg.style.display = 'block'; limitMsg.textContent = `Elérted a(z) ${info.name} csomag limitjét. Válts nagyobb csomagra a dashboardon.`; }
+  else { limitMsg.style.display = 'none'; }
+  return atLimit;
+}
+async function incrementUsage(){
+  const meta = vfMeta();
+  const used = currentUsage(meta);
+  await saveVfMeta({ usage: { count: used + 1, date: todayStr() } });
+}
+
+let selectedFile = null;
+let selectedBase64 = null;
+
+function handleFile(file){
+  if (!file) return;
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = e.target.result;
+    selectedBase64 = result.split(',')[1];
+    document.getElementById('previewImg').src = result;
+    document.getElementById('previewImg').style.display = 'block';
+    document.getElementById('dropText').textContent = file.name;
+    document.getElementById('generateBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('fileInput').addEventListener('change', (e) => handleFile(e.target.files[0]));
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+
+function renderResult(result){
+  const wrap = document.getElementById('resultsWrap');
+  const color = result.score >= 70 ? 'var(--mint)' : result.score >= 40 ? 'var(--gold)' : 'var(--hot)';
+  wrap.innerHTML = `
+    <div class="score-ring" style="color:${color};">${result.score}/100</div>
+    <div class="score-label">Thumbnail pontszám</div>
+    <div class="fb-section"><div class="fb-title" style="color:var(--mint);">✓ JÓ</div><ul class="fb-list">${(result.good||[]).map(g=>`<li>${g}</li>`).join('')}</ul></div>
+    <div class="fb-section"><div class="fb-title" style="color:var(--hot);">✕ JAVÍTANDÓ</div><ul class="fb-list">${(result.bad||[]).map(b=>`<li>${b}</li>`).join('')}</ul></div>
+    <div class="fb-section"><div class="fb-title" style="color:var(--gold);">💡 JAVASLATOK</div><ul class="fb-list">${(result.suggestions||[]).map(s=>`<li>${s}</li>`).join('')}</ul></div>
+  `;
+}
+
+async function analyzeThumbnail(){
+  if (renderUsage()) return;
+  if (!selectedBase64){ alert('Tölts fel egy képet!'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  const wrap = document.getElementById('resultsWrap');
+  btn.disabled = true; btn.textContent = '⚡ Elemzés…';
+  wrap.innerHTML = '<div class="result-empty">AI elemzi a képet…</div>';
+
+  try{
+    const token = await Clerk.session.getToken();
+    const res = await fetch('/api/analyze-thumbnail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ imageBase64: selectedBase64, mimeType: selectedFile.type }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
+    renderResult(data);
+    await incrementUsage();
+    renderUsage();
+  }catch(e){
+    wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = '⚡ Elemzés';
+  }
+}
+
+window.addEventListener('load', async function () {
+  try {
+    await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
+    Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+
+    const meta = vfMeta();
+    if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
+
+    renderUsage();
+    document.getElementById('dashShell').classList.add('ready');
+  } catch (e) {
+    document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
+    console.error(e);
+  }
+});
+</script>
+
+</body>
+</html>

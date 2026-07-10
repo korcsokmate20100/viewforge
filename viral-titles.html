@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viral Title Generator — ViewForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page-fade">
+
+<div class="wrap" style="max-width:1000px;padding-top:0;">
+  <div class="dash-top">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+    <div id="userButton"></div>
+  </div>
+
+  <div class="tool-shell" id="dashShell">
+    <a class="back-link" href="dashboard.html">← Vissza a dashboardra</a>
+
+    <div class="anim-in" style="margin-bottom:22px;">
+      <div class="sec-eyebrow">🔥 Viral Title Generator</div>
+      <h1 class="sec-title" style="font-size:24px;">Kapj 5 klikk-generáló címváltozatot</h1>
+    </div>
+
+    <div class="tool-grid-2col">
+      <div class="panel anim-in" style="animation-delay:.05s;">
+        <div class="panel-title">Beállítások</div>
+        <div class="panel-sub">Mit fed le a videó?</div>
+
+        <label class="field-label">Videó témája</label>
+        <input type="text" class="field-input" id="topicInput" placeholder="pl. GTA-ztam a rendőrökkel" />
+
+        <button class="btn btn-primary" id="generateBtn" style="width:100%;justify-content:center;margin-top:6px;" onclick="generateTitles()">⚡ Generálás</button>
+        <div id="limitMsg" class="limit-msg" style="display:none;"></div>
+      </div>
+
+      <div class="panel anim-in" style="animation-delay:.1s;">
+        <div class="panel-title">Címváltozatok</div>
+        <div class="panel-sub">
+          <span class="usage-pill" id="usagePill">0 / 5 ma</span>
+        </div>
+        <div id="resultsWrap">
+          <div class="result-empty">Add meg a témát balra, és nyomj Generálást →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script defer crossorigin="anonymous" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
+
+<script>
+const PLANS = [
+  {id:'free', name:'Free trial', dailyLimit:5, monthlyLimit:null},
+  {id:'basic', name:'Basic', dailyLimit:null, monthlyLimit:100},
+  {id:'pro', name:'Pro', dailyLimit:null, monthlyLimit:Infinity},
+];
+function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function vfMeta(){ return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {}; }
+async function saveVfMeta(partial){
+  const current = vfMeta();
+  await Clerk.user.update({ unsafeMetadata: { ...Clerk.user.unsafeMetadata, viewforge: { ...current, ...partial } } });
+}
+function currentUsage(meta){ return (meta.usage && meta.usage.date === todayStr()) ? meta.usage.count : 0; }
+
+function renderUsage(){
+  const meta = vfMeta();
+  const info = planInfo(meta.plan || 'free');
+  const used = currentUsage(meta);
+  const limitText = info.dailyLimit ? (used + ' / ' + info.dailyLimit + ' ma') : (info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó');
+  document.getElementById('usagePill').textContent = limitText;
+  const atLimit = info.dailyLimit ? used >= info.dailyLimit : (info.monthlyLimit !== Infinity && used >= info.monthlyLimit);
+  const limitMsg = document.getElementById('limitMsg');
+  const btn = document.getElementById('generateBtn');
+  if (atLimit){ limitMsg.style.display = 'block'; limitMsg.textContent = `Elérted a(z) ${info.name} csomag limitjét. Válts nagyobb csomagra a dashboardon.`; btn.disabled = true; }
+  else { limitMsg.style.display = 'none'; btn.disabled = false; }
+  return atLimit;
+}
+async function incrementUsage(){
+  const meta = vfMeta();
+  const used = currentUsage(meta);
+  await saveVfMeta({ usage: { count: used + 1, date: todayStr() } });
+}
+
+function renderTitles(titles){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = '';
+  titles.forEach((t, i) => {
+    const stars = '⭐'.repeat(Math.max(1, Math.min(5, t.ctr || 3)));
+    const card = document.createElement('div');
+    card.className = 'idea-card anim-in';
+    card.style.animationDelay = (i * 0.06) + 's';
+    card.innerHTML = `<div class="i-label">${stars}</div><div class="i-title">${t.title}</div>`;
+    wrap.appendChild(card);
+  });
+}
+
+async function generateTitles(){
+  if (renderUsage()) return;
+  const topic = document.getElementById('topicInput').value.trim();
+  if (!topic){ alert('Add meg a videó témáját!'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  const wrap = document.getElementById('resultsWrap');
+  btn.disabled = true; btn.textContent = '⚡ Generálás…';
+  wrap.innerHTML = '<div class="result-empty">AI gondolkodik…</div>';
+
+  const meta = vfMeta();
+  const profile = meta.creatorProfile || {};
+
+  try{
+    const token = await Clerk.session.getToken();
+    const res = await fetch('/api/generate-titles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ topic, channelName: profile.channelName, game: profile.mainGame, styles: profile.styles }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
+    renderTitles(data.titles);
+    await incrementUsage();
+    renderUsage();
+  }catch(e){
+    wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = '⚡ Generálás';
+  }
+}
+
+window.addEventListener('load', async function () {
+  try {
+    await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
+    Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+
+    const meta = vfMeta();
+    if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
+
+    renderUsage();
+    document.getElementById('dashShell').classList.add('ready');
+  } catch (e) {
+    document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
+    console.error(e);
+  }
+});
+</script>
+
+</body>
+</html>
