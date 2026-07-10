@@ -112,6 +112,7 @@ Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást, pontosan ilyen f
             { inline_data: { mime_type: mimeType || 'image/jpeg', data: imageBase64 } },
           ],
         }],
+        generationConfig: { thinkingConfig: { thinkingLevel: 'LOW' } },
       }
     );
     if (data.error) return new Response(JSON.stringify({ error: 'Az AI szolgáltatás jelenleg túlterhelt, kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });

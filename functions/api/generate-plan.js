@@ -107,7 +107,7 @@ Készíts egy egyhetes tartalomtervet, a megadott heti gyakorisággal elosztva a
 
     const data = await callGeminiWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`,
-      { contents: [{ parts: [{ text: prompt }] }] }
+      { contents: [{ parts: [{ text: prompt }] }], generationConfig: { thinkingConfig: { thinkingLevel: 'LOW' } } }
     );
     if (data.error) return new Response(JSON.stringify({ error: 'Az AI szolgáltatás jelenleg túlterhelt, kérlek próbáld újra pár másodperc múlva.' }), { status: 502, headers: CORS });
     const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
