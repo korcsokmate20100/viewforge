@@ -200,7 +200,7 @@ async function generateIdeas(){
     await incrementUsage();
     renderUsage();
   }catch(e){
-    wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}<br><span style="font-size:12px;">Ha ez a fájl még nincs élesítve, ellenőrizd a Netlify Function és az ANTHROPIC_API_KEY beállítását.</span></div>`;
+    wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}<br><span style="font-size:12px;">Ha ez a fájl még nincs élesítve, ellenőrizd a Netlify Function és a GEMINI_API_KEY beállítását.</span></div>`;
   }finally{
     btn.disabled = false; btn.textContent = '⚡ Generálás';
   }
