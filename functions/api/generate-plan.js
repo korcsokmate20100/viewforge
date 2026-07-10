@@ -45,7 +45,7 @@ async function verifyClerkToken(token){
   return payload;
 }
 
-async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
+async function callGeminiWithRetry(apiUrl, body, maxRetries = 4){
   let lastData = null;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(apiUrl, {
@@ -61,7 +61,7 @@ async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
       /overloaded|high demand|unavailable/i.test(data.error.message || '');
     if (!isOverloaded || attempt === maxRetries - 1) return data;
 
-    await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    await new Promise(r => setTimeout(r, 1000 * (attempt + 1) + Math.random() * 500));
   }
   return lastData;
 }
@@ -93,14 +93,19 @@ export async function onRequestPost(context){
     const { uploadsPerWeek, game, styles, channelName } = await request.json();
     if (!uploadsPerWeek) return new Response(JSON.stringify({ error: 'Hiányzik a heti feltöltési gyakoriság.' }), { status: 400, headers: CORS });
 
-    const prompt = `Te egy tapasztalt YouTube tartalom-stratéga vagy, aki gamer creatoroknak segít.
+    const prompt = `Te egy elit YouTube tartalom-stratéga vagy, aki csatornák növekedési tervét építi fel.
 
 Csatorna: ${channelName || 'ismeretlen'}
 Játék: ${game || 'ismeretlen'}
 Stílus: ${(styles || []).join(', ') || 'nincs megadva'}
 Heti feltöltés: ${uploadsPerWeek} videó/hét
 
-Készíts egy egyhetes tartalomtervet, a megadott heti gyakorisággal elosztva a hét napjaira (a legjobb napokra, pl. hétfő/szerda/péntek). Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást:
+Építs egy stratégiailag átgondolt heti tervet:
+- Keverd a tartalom-típusokat (pl. ne legyen mind ugyanaz a formátum) — Short a napi elérésért, egy nagyobb "húzó" videó a hét közepén/végén, esetleg stream/közösségi tartalom
+- A legjobb napokra időzítsd a legfontosabb tartalmat (hétfő/szerda/péntek/hétvége a gaming közönségnél jellemzően erős)
+- Minden elem legyen KONKRÉT ötlet, ne csak "készíts egy videót" jellegű általánosság
+
+Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást:
 [
   {"day": "nap magyarul", "type": "Short / Fő videó / Stream / stb.", "title": "konkrét tartalom-ötlet"}
 ]`;

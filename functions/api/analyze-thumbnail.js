@@ -45,7 +45,7 @@ async function verifyClerkToken(token){
   return payload;
 }
 
-async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
+async function callGeminiWithRetry(apiUrl, body, maxRetries = 4){
   let lastData = null;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(apiUrl, {
@@ -61,7 +61,7 @@ async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
       /overloaded|high demand|unavailable/i.test(data.error.message || '');
     if (!isOverloaded || attempt === maxRetries - 1) return data;
 
-    await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    await new Promise(r => setTimeout(r, 1000 * (attempt + 1) + Math.random() * 500));
   }
   return lastData;
 }
@@ -93,14 +93,21 @@ export async function onRequestPost(context){
     const { imageBase64, mimeType } = await request.json();
     if (!imageBase64) return new Response(JSON.stringify({ error: 'Hiányzik a kép.' }), { status: 400, headers: CORS });
 
-    const prompt = `Te egy tapasztalt YouTube thumbnail-elemző szakértő vagy. Elemezd ezt a gamer videó borítóképét.
+    const prompt = `Te egy elit YouTube thumbnail-elemző szakértő vagy, aki több száz gamer csatorna borítóképét tesztelte A/B teszttel.
+
+Elemezd ezt a borítóképet PONTOSAN ezek alapján:
+1. Fő téma azonnal, 1 másodperc alatt felismerhető-e (a legfontosabb tényező)
+2. Arc/érzelem láthatósága és ereje (ha van rajta ember/karakter)
+3. Kontraszt és szín — kiemelkedik-e egy YouTube feedben más thumbnailek között
+4. Szöveg mennyisége és olvashatósága mobilon, kis méretben is
+5. Vizuális fókusz — nincs-e túl sok elem, ami elvonja a figyelmet a lényegről
 
 Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást, pontosan ilyen formában:
 {
   "score": 0-100 közötti szám,
-  "good": ["1-3 rövid pozitívum magyarul"],
-  "bad": ["1-3 rövid negatívum magyarul"],
-  "suggestions": ["1-3 rövid, konkrét javaslat magyarul"]
+  "good": ["1-3 konkrét pozitívum magyarul, a fenti szempontokra hivatkozva"],
+  "bad": ["1-3 konkrét negatívum magyarul"],
+  "suggestions": ["1-3 konkrét, azonnal megvalósítható javaslat magyarul"]
 }`;
 
     const data = await callGeminiWithRetry(

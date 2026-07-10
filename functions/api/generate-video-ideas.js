@@ -58,7 +58,7 @@ async function verifyClerkToken(token){
   return payload;
 }
 
-async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
+async function callGeminiWithRetry(apiUrl, body, maxRetries = 4){
   let lastData = null;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(apiUrl, {
@@ -74,7 +74,7 @@ async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
       /overloaded|high demand|unavailable/i.test(data.error.message || '');
     if (!isOverloaded || attempt === maxRetries - 1) return data;
 
-    await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    await new Promise(r => setTimeout(r, 1000 * (attempt + 1) + Math.random() * 500));
   }
   return lastData;
 }
@@ -115,7 +115,7 @@ export async function onRequestPost(context){
       return new Response(JSON.stringify({ error: 'Hiányzik a játék neve.' }), { status: 400, headers: CORS });
     }
 
-    const prompt = `Te egy tapasztalt YouTube/Twitch tartalom-stratéga vagy, aki gamer creatoroknak segít.
+    const prompt = `Te egy elit YouTube/Twitch tartalom-stratéga vagy, aki a legsikeresebb gamer csatornák növekedését elemezte. Nem generikus ötleteket adsz, hanem olyat, ami MOST, ebben a pillanatban működne a platform algoritmusán.
 
 Csatorna: ${channelName || 'ismeretlen'}
 Játék: ${game}
@@ -124,9 +124,15 @@ Csatorna méret: ${channelSize || 'ismeretlen'} feliratkozó
 Stílus: ${(styles || []).join(', ') || 'nincs megadva'}
 Cél: ${goal || 'több nézettség'}
 
-Adj 3 konkrét videó-ötletet magyarul. Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást (nincs bevezető, nincs magyarázat, nincs markdown code block jelölés), pontosan ilyen formában:
+Szabályok a jó ötlethez:
+- Legyen KONKRÉT forgatókönyv, ne általános téma (pl. ne "vicces Minecraft videó", hanem egy pontos szituáció/csavar)
+- Legyen benne feszültség, kíváncsiság vagy tét — amiért végig kell nézni
+- Vedd figyelembe a csatorna méretét: kis csatornánál merészebb, figyelemfelkeltőbb formátum javasolt, nagy csatornánál a márka konzisztenciája is számít
+- Kerüld a klisét és azt, amit már ezerszer láttak — legyen benne egyedi csavar
+
+Adj 3 különböző jellegű, konkrét videó-ötletet magyarul (ne mind ugyanolyan felépítésű legyen). Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást (nincs bevezető, nincs magyarázat, nincs markdown code block jelölés), pontosan ilyen formában:
 [
-  {"title": "videó cím", "why": "1 mondat, miért működhet", "thumbnail": "rövid thumbnail-ötlet", "hook": "az első pár másodperc mondata", "ctr": 1-5 közötti szám}
+  {"title": "videó cím", "why": "1 konkrét mondat, miért működhet EBBEN a niche-ben", "thumbnail": "rövid thumbnail-ötlet", "hook": "az első pár másodperc mondata", "ctr": 1-5 közötti szám}
 ]`;
 
     const data = await callGeminiWithRetry(

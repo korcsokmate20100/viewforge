@@ -45,7 +45,7 @@ async function verifyClerkToken(token){
   return payload;
 }
 
-async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
+async function callGeminiWithRetry(apiUrl, body, maxRetries = 4){
   let lastData = null;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(apiUrl, {
@@ -61,7 +61,7 @@ async function callGeminiWithRetry(apiUrl, body, maxRetries = 3){
       /overloaded|high demand|unavailable/i.test(data.error.message || '');
     if (!isOverloaded || attempt === maxRetries - 1) return data;
 
-    await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    await new Promise(r => setTimeout(r, 1000 * (attempt + 1) + Math.random() * 500));
   }
   return lastData;
 }
@@ -93,14 +93,22 @@ export async function onRequestPost(context){
     const { topic, channelName, game, styles } = await request.json();
     if (!topic) return new Response(JSON.stringify({ error: 'Hiányzik a videó témája.' }), { status: 400, headers: CORS });
 
-    const prompt = `Te egy tapasztalt YouTube cím-optimalizáló szakértő vagy, aki gamer creatoroknak segít.
+    const prompt = `Te egy elit YouTube cím-optimalizáló szakértő vagy, aki több millió megtekintést hozó gamer címeket írt.
 
 Csatorna: ${channelName || 'ismeretlen'}
 Játék: ${game || 'ismeretlen'}
 Stílus: ${(styles || []).join(', ') || 'nincs megadva'}
 Videó témája: ${topic}
 
-Adj 5 különböző, klikk-generáló YouTube címváltozatot magyarul. Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást:
+Használj legalább 3 KÜLÖNBÖZŐ bevált cím-mintát az 5 közül, ne mind ugyanolyan felépítésű legyen:
+- Kíváncsiság-rés (hiányzó infó, amit csak megnézve tudsz meg)
+- Konkrét szám/eredmény a címben (pl. időtartam, mennyiség, helyezés)
+- Erős érzelmi szó (pl. meglepő, sokkoló, lehetetlen) — de csak ha a téma tényleg indokolja, ne legyen hazug
+- Személyes/first-person dráma ("túléltem", "megpróbáltam")
+
+Minden cím legyen rövid (max ~60 karakter), és a tényleges tartalmat tükrözze — ne ígérjen olyat, ami nincs a videóban.
+
+Adj 5 különböző címváltozatot magyarul. Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást:
 [
   {"title": "cím szövege", "ctr": 1-5 közötti szám (becsült CTR erősség)}
 ]`;
