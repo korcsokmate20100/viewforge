@@ -127,3 +127,4 @@ export async function onRequestPost(context){
     return new Response(JSON.stringify({ error: 'Hiba történt a csatorna lekérdezése közben.' }), { status: 500, headers: CORS });
   }
 }
+// force redeploy 1783671908
