@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
@@ -53,40 +53,37 @@
       </div>
 
       <div class="dash-tab-panel" id="tabProfile">
-        <div class="profile-row">
-          <div class="profile-sub-card anim-in" style="animation-delay:.05s;">
-            <div class="channel-chip">
-              <img id="channelThumb" src="" alt="" style="display:none;" />
-              <div>
-                <div class="c-name" id="channelNameLabel">—</div>
-                <div class="c-meta" id="channelMetaLabel">—</div>
-              </div>
-            </div>
-            <div class="edit-profile-btn" id="editProfileBtn" title="Profil szerkesztése">✏️</div>
+        <div class="player-card anim-in">
+          <div class="player-avatar-wrap">
+            <span class="player-avatar-fallback">🎮</span>
+            <img id="channelThumb" src="" alt="" class="player-avatar" style="display:none;" />
           </div>
-
-          <div class="profile-sub-card anim-in" style="animation-delay:.1s;">
-            <div class="psc-label">Csomagod</div>
-            <div class="pc-plan">
-              <span class="plan-bar-badge" id="planBadge">Free trial</span>
-              <span class="pc-usage"><b id="usageText">0</b>/<span id="usageLimitText">5</span> ma</span>
+          <div class="player-info">
+            <div class="player-name-row">
+              <div class="c-name player-name" id="channelNameLabel">—</div>
+              <div class="edit-profile-btn" id="editProfileBtn" title="Profil szerkesztése">✏️</div>
             </div>
-            <div class="plan-switch-row" id="planSwitchRow"></div>
-          </div>
-        </div>
-
-        <div class="profile-sub-card anim-in" style="animation-delay:.15s;margin-top:16px;">
-          <div class="psc-label">Creator Level</div>
-          <div class="level-info">
+            <div class="c-meta player-meta" id="channelMetaLabel">—</div>
             <div class="level-title" id="levelTitle">Creator Level</div>
             <div class="level-track"><div class="level-fill" id="levelFill"></div></div>
             <div class="level-pct" id="levelPctText">0%</div>
           </div>
         </div>
 
-        <div class="profile-sub-card anim-in" style="animation-delay:.2s;margin-top:16px;">
-          <div class="psc-label">Statisztikák</div>
-          <div class="stats-strip" id="statsStrip"></div>
+        <div class="profile-row">
+          <div class="profile-sub-card anim-in" style="animation-delay:.1s;">
+            <div class="psc-label">⚡ Csomagod</div>
+            <div class="pc-plan">
+              <span class="plan-bar-badge" id="planBadge">Free trial</span>
+              <span class="pc-usage"><b id="usageText">0</b>/<span id="usageLimitText">5</span> ma</span>
+            </div>
+            <div class="plan-switch-row" id="planSwitchRow"></div>
+          </div>
+
+          <div class="profile-sub-card anim-in" style="animation-delay:.15s;">
+            <div class="psc-label">📊 Statisztikák</div>
+            <div class="stats-strip" id="statsStrip"></div>
+          </div>
         </div>
 
         <div class="edit-profile-form" id="editProfileForm" style="display:none;margin-top:16px;">
