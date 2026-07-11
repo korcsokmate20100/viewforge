@@ -212,15 +212,8 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 
 /* Kitüntetés-rács */
 .badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-@keyframes badgePop{0%{opacity:0;transform:scale(.4) rotate(-10deg);}60%{opacity:1;transform:scale(1.12) rotate(3deg);}100%{opacity:1;transform:scale(1) rotate(0deg);}}
 .badge-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;background:#0D0912;border:1px solid var(--line);opacity:.4;filter:grayscale(1);transition:all .3s ease;}
-.badge-item.unlocked{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 16px -6px var(--gold);animation:badgePop .55s cubic-bezier(.34,1.56,.64,1) both;}
-.badge-item.unlocked:nth-child(1){animation-delay:.05s;}
-.badge-item.unlocked:nth-child(2){animation-delay:.15s;}
-.badge-item.unlocked:nth-child(3){animation-delay:.25s;}
-.badge-item.unlocked:nth-child(4){animation-delay:.35s;}
-.badge-item.unlocked:nth-child(5){animation-delay:.45s;}
-.badge-item.unlocked:nth-child(6){animation-delay:.55s;}
+.badge-item.unlocked{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 16px -6px var(--gold);}
 .badge-item:hover{transform:translateY(-3px);}
 .badge-ico{font-size:22px;}
 .badge-name{font-size:9.5px;color:var(--text-dim);text-align:center;line-height:1.25;}
