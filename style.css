@@ -161,6 +161,9 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .channel-chip img{width:32px;height:32px;border-radius:50%;}
 .channel-chip .c-name{font-weight:600;font-size:14px;}
 .channel-chip .c-meta{font-size:12px;color:var(--text-dim);}
+.edit-profile-btn{margin-left:auto;font-size:14px;cursor:pointer;padding:6px 9px;border-radius:8px;border:1px solid var(--line);transition:all .2s ease;flex-shrink:0;}
+.edit-profile-btn:hover{border-color:var(--brand);background:var(--brand-soft);}
+.edit-profile-form{background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:20px 22px;margin:-12px 0 24px;max-width:420px;}
 
 /* Tool nav grid on dashboard */
 .tools-nav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}

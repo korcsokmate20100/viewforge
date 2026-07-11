@@ -61,11 +61,29 @@
             <div class="c-name" id="channelNameLabel">—</div>
             <div class="c-meta" id="channelMetaLabel">—</div>
           </div>
+          <div class="edit-profile-btn" id="editProfileBtn" title="Profil szerkesztése">✏️</div>
         </div>
         <div class="level-info">
-          <div class="level-title">Creator Level</div>
+          <div class="level-title" id="levelTitle">Creator Level</div>
           <div class="level-track"><div class="level-fill" id="levelFill"></div></div>
           <div class="level-pct" id="levelPctText">0%</div>
+        </div>
+      </div>
+
+      <div class="edit-profile-form" id="editProfileForm" style="display:none;">
+        <label class="field-label">Fő játék</label>
+        <input type="text" class="field-input" id="editGameInput" placeholder="pl. Minecraft, Fortnite, Valorant" />
+        <label class="field-label">Stílus (válassz 1-2-t)</label>
+        <div class="chip-row" id="editStyleChips">
+          <div class="chip" data-style="Vicces">😂 Vicces</div>
+          <div class="chip" data-style="Kihívás">🎯 Kihívás</div>
+          <div class="chip" data-style="Story">📖 Story</div>
+          <div class="chip" data-style="Tutorial">🎓 Tutorial</div>
+          <div class="chip" data-style="Competitive">🏆 Competitive</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary btn-sm" id="saveProfileBtn" style="flex:1;justify-content:center;">Mentés</button>
+          <button class="btn btn-ghost btn-sm" id="cancelProfileBtn">Mégse</button>
         </div>
       </div>
 
@@ -244,9 +262,68 @@ function renderDashboard(){
   document.getElementById('channelMetaLabel').textContent =
     (profile.mainGame || '') + (profile.subscriberCount ? ' • ' + profile.subscriberCount.toLocaleString() + ' feliratkozó' : '');
 
-  const levelPct = Math.min(100, Math.round(((profile.subscriberCount || 0) / 10000) * 100));
-  requestAnimationFrame(() => { document.getElementById('levelFill').style.width = levelPct + '%'; });
-  document.getElementById('levelPctText').textContent = levelPct + '% a következő szintig';
+  renderLevel(meta.totalGenerations || 0);
+  setupProfileEditor(profile);
+}
+
+const LEVEL_TITLES = [
+  { min: 0, title: 'Kezdő Creator' },
+  { min: 3, title: 'Feltörekvő Creator' },
+  { min: 8, title: 'Aktív Creator' },
+  { min: 15, title: 'Tapasztalt Creator' },
+  { min: 25, title: 'Profi Creator' },
+  { min: 40, title: 'Elit Creator' },
+  { min: 60, title: 'Creator Legenda' },
+];
+const XP_PER_LEVEL = 5;
+
+function renderLevel(totalXp){
+  const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
+  const xpInLevel = totalXp % XP_PER_LEVEL;
+  const pct = Math.round((xpInLevel / XP_PER_LEVEL) * 100);
+  const titleInfo = [...LEVEL_TITLES].reverse().find(t => (level - 1) >= 0 && totalXp >= t.min) || LEVEL_TITLES[0];
+
+  document.getElementById('levelTitle').textContent = `${level}. szint — ${titleInfo.title}`;
+  requestAnimationFrame(() => { document.getElementById('levelFill').style.width = pct + '%'; });
+  document.getElementById('levelPctText').textContent = `${xpInLevel} / ${XP_PER_LEVEL} generálás a következő szintig`;
+}
+
+let editSelectedStyles = [];
+function setupProfileEditor(profile){
+  const btn = document.getElementById('editProfileBtn');
+  const form = document.getElementById('editProfileForm');
+  const cancelBtn = document.getElementById('cancelProfileBtn');
+  const saveBtn = document.getElementById('saveProfileBtn');
+
+  btn.onclick = () => {
+    document.getElementById('editGameInput').value = profile.mainGame || '';
+    editSelectedStyles = [...(profile.styles || [])];
+    document.querySelectorAll('#editStyleChips .chip').forEach(chip => {
+      chip.classList.toggle('on', editSelectedStyles.includes(chip.dataset.style));
+    });
+    form.style.display = 'block';
+  };
+  cancelBtn.onclick = () => { form.style.display = 'none'; };
+
+  document.getElementById('editStyleChips').onclick = (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    chip.classList.toggle('on');
+    const style = chip.dataset.style;
+    if (editSelectedStyles.includes(style)) editSelectedStyles = editSelectedStyles.filter(s => s !== style);
+    else editSelectedStyles.push(style);
+  };
+
+  saveBtn.onclick = async () => {
+    const game = document.getElementById('editGameInput').value.trim();
+    if (!game){ alert('Add meg a fő játékodat!'); return; }
+    const meta = vfMeta();
+    await saveVfMeta({
+      creatorProfile: { ...meta.creatorProfile, mainGame: game, styles: editSelectedStyles },
+    });
+    form.style.display = 'none';
+    renderDashboard();
+  };
 }
 
 window.addEventListener('load', async function () {
@@ -257,6 +334,13 @@ window.addEventListener('load', async function () {
     Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
     renderDashboard();
     document.getElementById('dashShell').classList.add('ready');
+    // Az anim-in animaciokat csak MOST inditjuk ujra, hogy ne "lathatatlanul" jatszodjanak le
+    // a konteneren mig az opacity:0 volt (Clerk betoltese alatt).
+    document.querySelectorAll('#dashShell .anim-in').forEach(el => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
   } catch (e) {
     document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
     console.error(e);

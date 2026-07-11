@@ -99,7 +99,8 @@ function renderUsage(){
 async function incrementUsage(){
   const meta = vfMeta();
   const used = currentUsage(meta);
-  await saveVfMeta({ usage: { count: used + 1, date: todayStr() } });
+  const totalXp = (meta.totalGenerations || 0) + 1;
+  await saveVfMeta({ usage: { count: used + 1, date: todayStr() }, totalGenerations: totalXp });
 }
 
 function renderPlan(plan){
@@ -210,6 +211,13 @@ window.addEventListener('load', async function () {
     renderUsage();
     renderHistory();
     document.getElementById('dashShell').classList.add('ready');
+    // Az anim-in animaciokat csak MOST inditjuk ujra, hogy ne "lathatatlanul" jatszodjanak le
+    // a konteneren mig az opacity:0 volt (Clerk betoltese alatt).
+    document.querySelectorAll('#dashShell .anim-in').forEach(el => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
   } catch (e) {
     document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
     console.error(e);
