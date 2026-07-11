@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
@@ -47,28 +47,34 @@
     <div id="mainDash" style="display:none;">
       <div class="dash-greet anim-in" style="margin-bottom:18px;">Üdv újra<span id="userName">!</span> 🎮</div>
 
-      <div class="plan-bar anim-in" style="animation-delay:.05s;">
-        <div class="plan-bar-left">
-          <span class="plan-bar-badge" id="planBadge">Free trial</span>
-          <span class="plan-bar-limits"><b id="usageText">0</b> / <span id="usageLimitText">5</span> generálás ma</span>
-        </div>
-        <div class="plan-switch-row" id="planSwitchRow"></div>
-      </div>
-
-      <div class="level-card anim-in" style="animation-delay:.14s;">
-        <div class="channel-chip">
-          <img id="channelThumb" src="" alt="" style="display:none;" />
-          <div>
-            <div class="c-name" id="channelNameLabel">—</div>
-            <div class="c-meta" id="channelMetaLabel">—</div>
+      <div class="profile-card anim-in" style="animation-delay:.08s;">
+        <div class="pc-identity">
+          <div class="channel-chip">
+            <img id="channelThumb" src="" alt="" style="display:none;" />
+            <div>
+              <div class="c-name" id="channelNameLabel">—</div>
+              <div class="c-meta" id="channelMetaLabel">—</div>
+            </div>
           </div>
           <div class="edit-profile-btn" id="editProfileBtn" title="Profil szerkesztése">✏️</div>
+          <div class="pc-plan">
+            <span class="plan-bar-badge" id="planBadge">Free trial</span>
+            <span class="pc-usage"><b id="usageText">0</b>/<span id="usageLimitText">5</span> ma</span>
+          </div>
+          <div class="plan-switch-row" id="planSwitchRow"></div>
         </div>
+
+        <div class="pc-divider"></div>
+
         <div class="level-info">
           <div class="level-title" id="levelTitle">Creator Level</div>
           <div class="level-track"><div class="level-fill" id="levelFill"></div></div>
           <div class="level-pct" id="levelPctText">0%</div>
         </div>
+
+        <div class="pc-divider"></div>
+
+        <div class="stats-strip" id="statsStrip"></div>
       </div>
 
       <div class="edit-profile-form" id="editProfileForm" style="display:none;">
@@ -87,8 +93,6 @@
           <button class="btn btn-ghost btn-sm" id="cancelProfileBtn">Mégse</button>
         </div>
       </div>
-
-      <div class="stats-strip anim-in" style="animation-delay:.19s;" id="statsStrip"></div>
 
       <div class="ws-title" style="margin-bottom:14px;color:var(--text-dim);font-size:13px;text-transform:uppercase;letter-spacing:.04em;">Eszközeid</div>
       <div class="tools-nav-grid">
