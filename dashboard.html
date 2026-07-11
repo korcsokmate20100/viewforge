@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
@@ -335,12 +335,11 @@ function renderToolUsageChart(meta){
   const wrap = document.getElementById('toolUsageChart');
   wrap.innerHTML = TOOL_META.map((t, i) => {
     const val = usage[t.key] || 0;
-    const pct = Math.round((val / max) * 100);
     return `
       <div class="bar-row">
         <div class="bar-label">${t.icon} ${t.label}</div>
         <div class="bar-track"><div class="bar-fill" id="barFill${i}" style="background:var(${t.varColor});"></div></div>
-        <div class="bar-val">${val}</div>
+        <div class="bar-val" id="barVal${i}">0</div>
       </div>
     `;
   }).join('');
@@ -350,6 +349,7 @@ function renderToolUsageChart(meta){
       const pct = Math.round((val / max) * 100);
       const el = document.getElementById('barFill' + i);
       if (el) el.style.width = (val > 0 ? Math.max(pct, 6) : 0) + '%';
+      animateCountUp(document.getElementById('barVal' + i), val, 800);
     });
   });
 }
@@ -411,6 +411,19 @@ function renderActivityFeed(meta){
   `).join('');
 }
 
+function animateCountUp(el, target, duration){
+  duration = duration || 900;
+  const startTime = performance.now();
+  function tick(now){
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(target * eased);
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(tick);
+}
+
 function renderStats(meta){
   const total = meta.totalGenerations || 0;
   const level = Math.floor(total / XP_PER_LEVEL) + 1;
@@ -423,10 +436,13 @@ function renderStats(meta){
     .filter(key => Array.isArray(meta[key]) && meta[key].length > 0).length;
 
   document.getElementById('statsStrip').innerHTML = `
-    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-lbl">Összes generálás</div></div>
-    <div class="stat-box"><div class="stat-num">${toolsUsed}/5</div><div class="stat-lbl">Kipróbált eszköz</div></div>
-    <div class="stat-box"><div class="stat-num">${memberDays}</div><div class="stat-lbl">Napja tag vagy</div></div>
+    <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Összes generálás</div></div>
+    <div class="stat-box"><div class="stat-num"><span id="statTools">0</span>/5</div><div class="stat-lbl">Kipróbált eszköz</div></div>
+    <div class="stat-box"><div class="stat-num" id="statDays">0</div><div class="stat-lbl">Napja tag vagy</div></div>
   `;
+  animateCountUp(document.getElementById('statTotal'), total);
+  animateCountUp(document.getElementById('statTools'), toolsUsed, 600);
+  animateCountUp(document.getElementById('statDays'), typeof memberDays === 'number' ? memberDays : 0, 700);
 }
 
 const LEVEL_TITLES = [

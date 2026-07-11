@@ -205,13 +205,22 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .bar-row:last-child{margin-bottom:0;}
 .bar-label{font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{height:8px;background:#0D0912;border-radius:5px;overflow:hidden;border:1px solid var(--line);}
-.bar-fill{height:100%;width:0%;border-radius:5px;box-shadow:0 0 8px -1px currentColor;transition:width 1s cubic-bezier(.16,.8,.24,1);}
+@keyframes shimmerSweep{0%{transform:translateX(-120%);}100%{transform:translateX(220%);}}
+.bar-fill{height:100%;width:0%;border-radius:5px;box-shadow:0 0 8px -1px currentColor;transition:width 1s cubic-bezier(.16,.8,.24,1);position:relative;overflow:hidden;}
+.bar-fill::after{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent);animation:shimmerSweep 2.4s ease-in-out infinite;}
 .bar-val{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);text-align:right;}
 
 /* Kitüntetés-rács */
 .badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+@keyframes badgePop{0%{opacity:0;transform:scale(.4) rotate(-10deg);}60%{opacity:1;transform:scale(1.12) rotate(3deg);}100%{opacity:1;transform:scale(1) rotate(0deg);}}
 .badge-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;background:#0D0912;border:1px solid var(--line);opacity:.4;filter:grayscale(1);transition:all .3s ease;}
-.badge-item.unlocked{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 16px -6px var(--gold);}
+.badge-item.unlocked{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 16px -6px var(--gold);animation:badgePop .55s cubic-bezier(.34,1.56,.64,1) both;}
+.badge-item.unlocked:nth-child(1){animation-delay:.05s;}
+.badge-item.unlocked:nth-child(2){animation-delay:.15s;}
+.badge-item.unlocked:nth-child(3){animation-delay:.25s;}
+.badge-item.unlocked:nth-child(4){animation-delay:.35s;}
+.badge-item.unlocked:nth-child(5){animation-delay:.45s;}
+.badge-item.unlocked:nth-child(6){animation-delay:.55s;}
 .badge-item:hover{transform:translateY(-3px);}
 .badge-ico{font-size:22px;}
 .badge-name{font-size:9.5px;color:var(--text-dim);text-align:center;line-height:1.25;}
@@ -248,7 +257,8 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .level-title{font-weight:700;font-size:14.5px;margin-bottom:9px;font-family:var(--font-heading);}
 .level-track{height:10px;background:#0D0912;border-radius:6px;overflow:hidden;border:1px solid var(--line);position:relative;}
 .level-track::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background-image:repeating-linear-gradient(90deg,transparent 0 16px, rgba(0,0,0,0.45) 16px 18px);}
-.level-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--hot));border-radius:6px;width:0%;box-shadow:0 0 12px 0 var(--brand);transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;z-index:1;}
+.level-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--hot));border-radius:6px;width:0%;box-shadow:0 0 12px 0 var(--brand);transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;z-index:1;overflow:hidden;}
+.level-fill::before{content:"";position:absolute;top:0;bottom:0;width:35%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);animation:shimmerSweep 2.6s ease-in-out infinite;z-index:3;}
 .level-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:8px;}
 
 .channel-chip{display:flex;align-items:center;gap:10px;}
