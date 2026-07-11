@@ -6,7 +6,7 @@
 <title>Thumbnail Analyzer — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 <style>
 .drop-zone{border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center;cursor:pointer;transition:border-color .2s ease;margin-bottom:16px;}
 .drop-zone:hover, .drop-zone.drag{border-color:var(--brand);}
@@ -36,7 +36,7 @@
     </div>
 
     <div class="tool-grid-2col">
-      <div class="panel anim-in" style="animation-delay:.05s;">
+      <div class="panel anim-in" style="animation-delay:.12s;">
         <div class="panel-title">Töltsd fel a borítóképed</div>
         <div class="panel-sub">JPG vagy PNG, max. 5 MB</div>
 
@@ -50,7 +50,7 @@
         <div id="limitMsg" class="limit-msg" style="display:none;"></div>
       </div>
 
-      <div class="panel anim-in" style="animation-delay:.1s;">
+      <div class="panel anim-in" style="animation-delay:.28s;">
         <div class="panel-title">Eredmény</div>
         <div class="panel-sub">
           <span class="usage-pill" id="usagePill">0 / 5 ma</span>
@@ -178,13 +178,20 @@ function renderHistory(){
   const list = document.getElementById('historyList');
   list.innerHTML = history.map((h, i) => `
     <div class="history-item" data-idx="${i}">
-      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.score}/100 pont</div>
+      <div class="h-content"><div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.score}/100 pont</div></div>
+      <div class="history-del" data-del="${i}">✕</div>
     </div>
   `).join('');
-  list.querySelectorAll('.history-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const idx = parseInt(item.dataset.idx, 10);
-      renderResult(history[idx]);
+  list.querySelectorAll('.h-content').forEach((el, i) => {
+    el.addEventListener('click', () => renderResult(history[i]));
+  });
+  list.querySelectorAll('.history-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.del, 10);
+      history.splice(idx, 1);
+      await saveVfMeta({ thumbnailHistory: history });
+      renderHistory();
     });
   });
 }

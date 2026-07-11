@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body class="page-fade">
 
@@ -46,7 +46,7 @@
     <div id="mainDash" style="display:none;">
       <div class="dash-greet anim-in" style="margin-bottom:18px;">Üdv újra<span id="userName">!</span> 🎮</div>
 
-      <div class="plan-bar anim-in" style="animation-delay:.03s;">
+      <div class="plan-bar anim-in" style="animation-delay:.05s;">
         <div class="plan-bar-left">
           <span class="plan-bar-badge" id="planBadge">Free trial</span>
           <span class="plan-bar-limits"><b id="usageText">0</b> / <span id="usageLimitText">5</span> generálás ma</span>
@@ -54,7 +54,7 @@
         <div class="plan-switch-row" id="planSwitchRow"></div>
       </div>
 
-      <div class="level-card anim-in" style="animation-delay:.06s;">
+      <div class="level-card anim-in" style="animation-delay:.14s;">
         <div class="channel-chip">
           <img id="channelThumb" src="" alt="" style="display:none;" />
           <div>
@@ -87,29 +87,31 @@
         </div>
       </div>
 
+      <div class="stats-strip anim-in" style="animation-delay:.19s;" id="statsStrip"></div>
+
       <div class="ws-title" style="margin-bottom:14px;color:var(--text-dim);font-size:13px;text-transform:uppercase;letter-spacing:.04em;">Eszközeid</div>
       <div class="tools-nav-grid">
-        <a class="tool-nav-card anim-in" style="animation-delay:.09s;" href="video-ideas.html">
+        <a class="tool-nav-card anim-in" style="animation-delay:.24s;" href="video-ideas.html">
           <div class="tool-ico">💡</div>
           <div class="tool-name">Video Ideas</div>
           <div class="tool-desc">Konkrét videó-ötletek a játékodhoz</div>
         </a>
-        <a class="tool-nav-card anim-in" style="animation-delay:.12s;" href="viral-titles.html">
+        <a class="tool-nav-card anim-in" style="animation-delay:.34s;" href="viral-titles.html">
           <div class="tool-ico">🔥</div>
           <div class="tool-name">Viral Titles</div>
           <div class="tool-desc">Cím-variációk CTR-becsléssel</div>
         </a>
-        <a class="tool-nav-card anim-in" style="animation-delay:.15s;" href="thumbnail-ai.html">
+        <a class="tool-nav-card anim-in" style="animation-delay:.44s;" href="thumbnail-ai.html">
           <div class="tool-ico">🖼</div>
           <div class="tool-name">Thumbnail AI</div>
           <div class="tool-desc">Borítókép elemzés és pontszám</div>
         </a>
-        <a class="tool-nav-card anim-in" style="animation-delay:.18s;" href="content-planner.html">
+        <a class="tool-nav-card anim-in" style="animation-delay:.54s;" href="content-planner.html">
           <div class="tool-ico">📅</div>
           <div class="tool-name">Content Planner</div>
           <div class="tool-desc">Heti tartalomterv</div>
         </a>
-        <a class="tool-nav-card anim-in" style="animation-delay:.21s;" href="video-script.html">
+        <a class="tool-nav-card anim-in" style="animation-delay:.64s;" href="video-script.html">
           <div class="tool-ico">🎬</div>
           <div class="tool-name">Video Script</div>
           <div class="tool-desc">Ötletből forgatásra kész vázlat</div>
@@ -263,7 +265,26 @@ function renderDashboard(){
     (profile.mainGame || '') + (profile.subscriberCount ? ' • ' + profile.subscriberCount.toLocaleString() + ' feliratkozó' : '');
 
   renderLevel(meta.totalGenerations || 0);
+  renderStats(meta);
   setupProfileEditor(profile);
+}
+
+function renderStats(meta){
+  const total = meta.totalGenerations || 0;
+  const level = Math.floor(total / XP_PER_LEVEL) + 1;
+  let memberDays = '—';
+  if (Clerk.user.createdAt) {
+    const diffMs = Date.now() - new Date(Clerk.user.createdAt).getTime();
+    memberDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+  }
+  const toolsUsed = ['videoIdeasHistory','titlesHistory','thumbnailHistory','planHistory','scriptHistory']
+    .filter(key => Array.isArray(meta[key]) && meta[key].length > 0).length;
+
+  document.getElementById('statsStrip').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-lbl">Összes generálás</div></div>
+    <div class="stat-box"><div class="stat-num">${toolsUsed}/5</div><div class="stat-lbl">Kipróbált eszköz</div></div>
+    <div class="stat-box"><div class="stat-num">${memberDays}</div><div class="stat-lbl">Napja tag vagy</div></div>
+  `;
 }
 
 const LEVEL_TITLES = [

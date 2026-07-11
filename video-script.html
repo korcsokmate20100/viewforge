@@ -6,7 +6,7 @@
 <title>Video Script Writer — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 <style>
 .script-hook{background:rgba(255,193,69,0.08);border:1px solid rgba(255,193,69,0.3);border-radius:12px;padding:16px;margin-bottom:18px;}
 .script-hook .sh-label{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--gold);margin-bottom:6px;}
@@ -38,7 +38,7 @@
     </div>
 
     <div class="tool-grid-2col">
-      <div class="panel anim-in" style="animation-delay:.05s;">
+      <div class="panel anim-in" style="animation-delay:.12s;">
         <div class="panel-title">Miről szóljon?</div>
         <div class="panel-sub" id="ideaPickerLabel" style="display:none;">Válassz egy korábbi ötletet, vagy írj be sajátot:</div>
         <div class="idea-pick-row" id="ideaPickerRow"></div>
@@ -50,7 +50,7 @@
         <div id="limitMsg" class="limit-msg" style="display:none;"></div>
       </div>
 
-      <div class="panel anim-in" style="animation-delay:.1s;">
+      <div class="panel anim-in" style="animation-delay:.28s;">
         <div class="panel-title">Forgatókönyv</div>
         <div class="panel-sub">
           <span class="usage-pill" id="usagePill">0 / 5 ma</span>
@@ -171,14 +171,20 @@ function renderHistory(){
   const list = document.getElementById('historyList');
   list.innerHTML = history.map((h, i) => `
     <div class="history-item" data-idx="${i}">
-      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')}</div>
-      ${h.topic}
+      <div class="h-content"><div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')}</div>${h.topic}</div>
+      <div class="history-del" data-del="${i}">✕</div>
     </div>
   `).join('');
-  list.querySelectorAll('.history-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const idx = parseInt(item.dataset.idx, 10);
-      renderScript(history[idx].script);
+  list.querySelectorAll('.h-content').forEach((el, i) => {
+    el.addEventListener('click', () => renderScript(history[i].script));
+  });
+  list.querySelectorAll('.history-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.del, 10);
+      history.splice(idx, 1);
+      await saveVfMeta({ scriptHistory: history });
+      renderHistory();
     });
   });
 }

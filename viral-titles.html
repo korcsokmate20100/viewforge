@@ -6,7 +6,7 @@
 <title>Viral Title Generator — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body class="page-fade">
 
@@ -25,7 +25,7 @@
     </div>
 
     <div class="tool-grid-2col">
-      <div class="panel anim-in" style="animation-delay:.05s;">
+      <div class="panel anim-in" style="animation-delay:.12s;">
         <div class="panel-title">Beállítások</div>
         <div class="panel-sub">Mit fed le a videó?</div>
 
@@ -36,7 +36,7 @@
         <div id="limitMsg" class="limit-msg" style="display:none;"></div>
       </div>
 
-      <div class="panel anim-in" style="animation-delay:.1s;">
+      <div class="panel anim-in" style="animation-delay:.28s;">
         <div class="panel-title">Címváltozatok</div>
         <div class="panel-sub">
           <span class="usage-pill" id="usagePill">0 / 5 ma</span>
@@ -145,14 +145,20 @@ function renderHistory(){
   const list = document.getElementById('historyList');
   list.innerHTML = history.map((h, i) => `
     <div class="history-item" data-idx="${i}">
-      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.topic}</div>
-      ${h.titles.map(t => t.title).join(' • ')}
+      <div class="h-content"><div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')} — ${h.topic}</div>${h.titles.map(t => t.title).join(' • ')}</div>
+      <div class="history-del" data-del="${i}">✕</div>
     </div>
   `).join('');
-  list.querySelectorAll('.history-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const idx = parseInt(item.dataset.idx, 10);
-      renderTitles(history[idx].titles);
+  list.querySelectorAll('.h-content').forEach((el, i) => {
+    el.addEventListener('click', () => renderTitles(history[i].titles));
+  });
+  list.querySelectorAll('.history-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.del, 10);
+      history.splice(idx, 1);
+      await saveVfMeta({ titlesHistory: history });
+      renderHistory();
     });
   });
 }
