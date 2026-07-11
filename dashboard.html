@@ -6,12 +6,12 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
 
-<div class="wrap" style="max-width:1120px;padding-top:0;">
+<div class="wrap" style="max-width:1280px;padding-top:0;">
   <div class="dash-top">
     <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
     <div id="userButton"></div>
@@ -84,6 +84,23 @@
             <div class="psc-label">📊 Statisztikák</div>
             <div class="stats-strip" id="statsStrip"></div>
           </div>
+        </div>
+
+        <div class="profile-row" style="margin-top:16px;">
+          <div class="profile-sub-card anim-in" style="animation-delay:.2s;">
+            <div class="psc-label">📈 Eszköz-használat</div>
+            <div id="toolUsageChart"></div>
+          </div>
+
+          <div class="profile-sub-card anim-in" style="animation-delay:.25s;">
+            <div class="psc-label">🏆 Eredmények</div>
+            <div class="badge-grid" id="badgeGrid"></div>
+          </div>
+        </div>
+
+        <div class="profile-sub-card anim-in" style="animation-delay:.3s;margin-top:16px;">
+          <div class="psc-label">🕐 Legutóbbi aktivitás</div>
+          <div id="activityFeed"></div>
         </div>
 
         <div class="edit-profile-form" id="editProfileForm" style="display:none;margin-top:16px;">
@@ -293,7 +310,100 @@ function renderDashboard(){
 
   renderLevel(meta.totalGenerations || 0);
   renderStats(meta);
+  renderToolUsageChart(meta);
+  renderBadges(meta);
+  renderActivityFeed(meta);
   setupProfileEditor(profile);
+}
+
+const TOOL_META = [
+  { key:'videoIdeas', label:'Video Ideas', icon:'💡', varColor:'--brand' },
+  { key:'titles',     label:'Viral Titles', icon:'🔥', varColor:'--hot' },
+  { key:'thumbnail',  label:'Thumbnail AI', icon:'🖼', varColor:'--gold' },
+  { key:'plan',       label:'Content Planner', icon:'📅', varColor:'--mint' },
+  { key:'script',     label:'Video Script', icon:'🎬', varColor:'--brand' },
+];
+
+function renderToolUsageChart(meta){
+  const usage = meta.toolUsage || {};
+  const max = Math.max(1, ...TOOL_META.map(t => usage[t.key] || 0));
+  const wrap = document.getElementById('toolUsageChart');
+  wrap.innerHTML = TOOL_META.map((t, i) => {
+    const val = usage[t.key] || 0;
+    const pct = Math.round((val / max) * 100);
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${t.icon} ${t.label}</div>
+        <div class="bar-track"><div class="bar-fill" id="barFill${i}" style="background:var(${t.varColor});"></div></div>
+        <div class="bar-val">${val}</div>
+      </div>
+    `;
+  }).join('');
+  requestAnimationFrame(() => {
+    TOOL_META.forEach((t, i) => {
+      const val = usage[t.key] || 0;
+      const pct = Math.round((val / max) * 100);
+      const el = document.getElementById('barFill' + i);
+      if (el) el.style.width = (val > 0 ? Math.max(pct, 6) : 0) + '%';
+    });
+  });
+}
+
+const ACHIEVEMENTS = [
+  { icon:'🌱', name:'Első lépés', check:(m,tools) => (m.totalGenerations||0) >= 1 },
+  { icon:'🔥', name:'Bemelegítés', check:(m,tools) => (m.totalGenerations||0) >= 5 },
+  { icon:'⚡', name:'Gépezet', check:(m,tools) => (m.totalGenerations||0) >= 25 },
+  { icon:'💎', name:'Veterán', check:(m,tools) => (m.totalGenerations||0) >= 50 },
+  { icon:'🧰', name:'Multitool', check:(m,tools) => tools >= 5 },
+  { icon:'👑', name:'Rangidős', check:(m,tools) => (Math.floor((m.totalGenerations||0)/XP_PER_LEVEL)+1) >= 5 },
+];
+
+function renderBadges(meta){
+  const toolsUsed = ['videoIdeasHistory','titlesHistory','thumbnailHistory','planHistory','scriptHistory']
+    .filter(key => Array.isArray(meta[key]) && meta[key].length > 0).length;
+  const grid = document.getElementById('badgeGrid');
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = a.check(meta, toolsUsed);
+    return `<div class="badge-item ${unlocked ? 'unlocked' : ''}" title="${a.name}"><div class="badge-ico">${a.icon}</div><div class="badge-name">${a.name}</div></div>`;
+  }).join('');
+}
+
+function timeAgo(ts){
+  const diffMin = Math.floor((Date.now() - ts) / 60000);
+  if (diffMin < 1) return 'most';
+  if (diffMin < 60) return diffMin + ' perce';
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return diffH + ' órája';
+  return Math.floor(diffH / 24) + ' napja';
+}
+
+function renderActivityFeed(meta){
+  const sources = [
+    { key:'videoIdeasHistory', icon:'💡', label:(h) => 'Video ötlet: ' + (h.game || '') },
+    { key:'titlesHistory', icon:'🔥', label:(h) => 'Cím-generálás: ' + (h.topic || '') },
+    { key:'thumbnailHistory', icon:'🖼', label:(h) => 'Thumbnail elemzés: ' + (h.score || '?') + '/100' },
+    { key:'planHistory', icon:'📅', label:(h) => 'Tartalomterv: ' + (h.uploadsPerWeek || '') + ' videó/hét' },
+    { key:'scriptHistory', icon:'🎬', label:(h) => 'Forgatókönyv: ' + (h.topic || '') },
+  ];
+  let items = [];
+  sources.forEach(s => {
+    (meta[s.key] || []).forEach(h => items.push({ ts: h.ts, icon: s.icon, text: s.label(h) }));
+  });
+  items.sort((a, b) => b.ts - a.ts);
+  items = items.slice(0, 6);
+
+  const feed = document.getElementById('activityFeed');
+  if (items.length === 0){
+    feed.innerHTML = '<div class="result-empty" style="padding:20px 0;">Még nincs aktivitás — próbáld ki valamelyik eszközt!</div>';
+    return;
+  }
+  feed.innerHTML = items.map(it => `
+    <div class="activity-item">
+      <div class="activity-ico">${it.icon}</div>
+      <div class="activity-text">${it.text}</div>
+      <div class="activity-time">${timeAgo(it.ts)}</div>
+    </div>
+  `).join('');
 }
 
 function renderStats(meta){
