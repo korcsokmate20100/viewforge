@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Content Planner — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=7">
+<script src="settings.js?v=1"></script>
 <style>
 .plan-row-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line);}
 .plan-row-item:first-child{border-top:none;}
@@ -210,6 +211,8 @@ window.addEventListener('load', async function () {
     await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
     if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
     Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+    applySettings((vfMeta().settings) || {});
+    initSettingsPanel();
 
     const meta = vfMeta();
     if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }

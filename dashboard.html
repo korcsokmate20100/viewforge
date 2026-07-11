@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=7">
+<script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
 
@@ -353,6 +354,8 @@ window.addEventListener('load', async function () {
     if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
 
     Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+    applySettings((vfMeta().settings) || {});
+    initSettingsPanel();
     renderDashboard();
     document.getElementById('dashShell').classList.add('ready');
     // Az anim-in animaciokat csak MOST inditjuk ujra, hogy ne "lathatatlanul" jatszodjanak le
