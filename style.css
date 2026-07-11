@@ -151,7 +151,8 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .onboard-msg{font-size:13px;color:var(--text-dim);margin-top:12px;min-height:18px;}
 
 /* Creator level bar */
-.level-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;margin-bottom:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.level-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;margin-bottom:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;transition:border-color .35s ease, box-shadow .35s ease;}
+.level-card:hover{border-color:#3a3352;box-shadow:0 16px 34px -18px rgba(155,95,255,0.3);}
 .level-info{flex:1;min-width:200px;}
 .level-title{font-weight:600;font-size:15px;margin-bottom:8px;}
 .level-track{height:8px;background:#150F1D;border-radius:99px;overflow:hidden;border:1px solid var(--line);}
@@ -167,7 +168,8 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 
 .stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
 @media (max-width:640px){ .stats-strip{grid-template-columns:1fr;} }
-.stat-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+.stat-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;transition:transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s ease, box-shadow .3s ease;}
+.stat-box:hover{transform:translateY(-4px);border-color:var(--brand);box-shadow:0 14px 30px -14px rgba(155,95,255,0.35);}
 .stat-box .stat-num{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--brand);}
 .stat-box .stat-lbl{font-size:12px;color:var(--text-dim);margin-top:2px;}
 
@@ -175,16 +177,12 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .tools-nav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
 @media (max-width:900px){ .tools-nav-grid{grid-template-columns:repeat(2,1fr);} }
 @media (max-width:560px){ .tools-nav-grid{grid-template-columns:1fr;} }
-.tool-nav-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;transition:transform .2s ease, border-color .2s ease;cursor:pointer;}
-.tool-nav-card:hover{transform:translateY(-4px);border-color:var(--brand);}
-@keyframes iconFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
-.tool-nav-card .tool-ico{font-size:24px;margin-bottom:10px;display:inline-block;animation:iconFloat 2.4s ease-in-out infinite;}
-.tool-nav-card:nth-child(1) .tool-ico{animation-delay:0s;}
-.tool-nav-card:nth-child(2) .tool-ico{animation-delay:.4s;}
-.tool-nav-card:nth-child(3) .tool-ico{animation-delay:.8s;}
-.tool-nav-card:nth-child(4) .tool-ico{animation-delay:1.2s;}
-.tool-nav-card:nth-child(5) .tool-ico{animation-delay:1.6s;}
-.tool-nav-card .tool-name{font-weight:600;font-size:14.5px;margin-bottom:4px;}
+.tool-nav-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;cursor:pointer;transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s ease, box-shadow .35s ease, background .35s ease;}
+.tool-nav-card:hover{transform:translateY(-7px);border-color:var(--brand);box-shadow:0 20px 44px -16px rgba(155,95,255,0.4);background:var(--surface-soft);}
+.tool-nav-card .tool-ico{font-size:24px;margin-bottom:10px;display:inline-block;transition:transform .4s cubic-bezier(.34,1.56,.64,1);}
+.tool-nav-card:hover .tool-ico{transform:scale(1.18) rotate(-6deg);}
+.tool-nav-card .tool-name{font-weight:600;font-size:14.5px;margin-bottom:4px;transition:color .3s ease;}
+.tool-nav-card:hover .tool-name{color:var(--brand);}
 .tool-nav-card .tool-desc{font-size:12px;color:var(--text-dim);}
 .tool-nav-card.soon{opacity:0.5;cursor:not-allowed;}
 .soon-badge{display:inline-block;font-size:10px;background:var(--brand-soft);color:var(--brand);padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle;}
