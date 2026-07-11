@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Script Writer — ViewForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.script-hook{background:rgba(255,193,69,0.08);border:1px solid rgba(255,193,69,0.3);border-radius:12px;padding:16px;margin-bottom:18px;}
+.script-hook .sh-label{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--gold);margin-bottom:6px;}
+.script-hook .sh-text{font-size:14.5px;font-style:italic;}
+.script-section{border-left:2px solid var(--brand);padding:4px 0 4px 16px;margin-bottom:16px;}
+.script-section .ss-label{font-size:12px;font-weight:600;color:var(--brand);margin-bottom:4px;}
+.script-section .ss-content{font-size:13.5px;color:var(--text);}
+.script-outro{background:rgba(61,220,151,0.08);border:1px solid rgba(61,220,151,0.3);border-radius:12px;padding:16px;margin-top:18px;}
+.script-outro .so-label{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--mint);margin-bottom:6px;}
+.idea-pick-row{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.idea-pick{border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:12.5px;cursor:pointer;transition:all .2s ease;color:var(--text-dim);}
+.idea-pick:hover{border-color:var(--brand);color:var(--text);background:var(--brand-soft);}
+</style>
+</head>
+<body class="page-fade">
+
+<div class="wrap" style="max-width:1000px;padding-top:0;">
+  <div class="dash-top">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+    <div id="userButton"></div>
+  </div>
+
+  <div class="tool-shell" id="dashShell">
+    <a class="back-link" href="dashboard.html">← Vissza a dashboardra</a>
+
+    <div class="anim-in" style="margin-bottom:22px;">
+      <div class="sec-eyebrow">🎬 Video Script Writer</div>
+      <h1 class="sec-title" style="font-size:24px;">Ötletből forgatásra kész vázlat</h1>
+    </div>
+
+    <div class="tool-grid-2col">
+      <div class="panel anim-in" style="animation-delay:.05s;">
+        <div class="panel-title">Miről szóljon?</div>
+        <div class="panel-sub" id="ideaPickerLabel" style="display:none;">Válassz egy korábbi ötletet, vagy írj be sajátot:</div>
+        <div class="idea-pick-row" id="ideaPickerRow"></div>
+
+        <label class="field-label">Videó téma / ötlet</label>
+        <input type="text" class="field-input" id="topicInput" placeholder="pl. 100 napos túlélés lávává váltó blokkokkal" />
+
+        <button class="btn btn-primary" id="generateBtn" style="width:100%;justify-content:center;margin-top:6px;" onclick="generateScript()">⚡ Vázlat írása</button>
+        <div id="limitMsg" class="limit-msg" style="display:none;"></div>
+      </div>
+
+      <div class="panel anim-in" style="animation-delay:.1s;">
+        <div class="panel-title">Forgatókönyv</div>
+        <div class="panel-sub">
+          <span class="usage-pill" id="usagePill">0 / 5 ma</span>
+        </div>
+        <div id="resultsWrap">
+          <div class="result-empty">Add meg a témát balra, és nyomj Vázlat írásra →</div>
+        </div>
+        <div class="history-section" id="historySection" style="display:none;">
+          <div class="history-title">Korábbi vázlatok</div>
+          <div id="historyList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script defer crossorigin="anonymous" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
+
+<script>
+const PLANS = [
+  {id:'free', name:'Free trial', dailyLimit:5, monthlyLimit:null},
+  {id:'basic', name:'Basic', dailyLimit:null, monthlyLimit:100},
+  {id:'pro', name:'Pro', dailyLimit:null, monthlyLimit:Infinity},
+];
+function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function vfMeta(){ return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {}; }
+async function saveVfMeta(partial){
+  const current = vfMeta();
+  await Clerk.user.update({ unsafeMetadata: { ...Clerk.user.unsafeMetadata, viewforge: { ...current, ...partial } } });
+}
+function currentUsage(meta){ return (meta.usage && meta.usage.date === todayStr()) ? meta.usage.count : 0; }
+
+function renderUsage(){
+  const meta = vfMeta();
+  const info = planInfo(meta.plan || 'free');
+  const used = currentUsage(meta);
+  const limitText = info.dailyLimit ? (used + ' / ' + info.dailyLimit + ' ma') : (info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó');
+  document.getElementById('usagePill').textContent = limitText;
+  const atLimit = info.dailyLimit ? used >= info.dailyLimit : (info.monthlyLimit !== Infinity && used >= info.monthlyLimit);
+  const limitMsg = document.getElementById('limitMsg');
+  const btn = document.getElementById('generateBtn');
+  if (atLimit){ limitMsg.style.display = 'block'; limitMsg.textContent = `Elérted a(z) ${info.name} csomag limitjét. Válts nagyobb csomagra a dashboardon.`; btn.disabled = true; }
+  else { limitMsg.style.display = 'none'; btn.disabled = false; }
+  return atLimit;
+}
+async function incrementUsage(){
+  const meta = vfMeta();
+  const used = currentUsage(meta);
+  await saveVfMeta({ usage: { count: used + 1, date: todayStr() } });
+}
+
+function renderIdeaPicker(){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.videoIdeasHistory) ? meta.videoIdeasHistory : [];
+  const allIdeas = history.flatMap(h => h.ideas || []);
+  if (allIdeas.length === 0) return;
+  document.getElementById('ideaPickerLabel').style.display = 'block';
+  const row = document.getElementById('ideaPickerRow');
+  row.innerHTML = allIdeas.slice(0, 4).map((idea, i) => `<div class="idea-pick" data-title="${encodeURIComponent(idea.title)}">💡 ${idea.title}</div>`).join('');
+  row.querySelectorAll('.idea-pick').forEach(el => {
+    el.addEventListener('click', () => { document.getElementById('topicInput').value = decodeURIComponent(el.dataset.title); });
+  });
+}
+
+function renderScript(script){
+  const wrap = document.getElementById('resultsWrap');
+  const fullText = `HOOK: ${script.hook}\n\n${(script.sections||[]).map(s => `${s.label.toUpperCase()}:\n${s.content}`).join('\n\n')}\n\nOUTRO: ${script.outro}`;
+  wrap.innerHTML = `
+    <div class="script-hook anim-in"><div class="sh-label">🎣 HOOK</div><div class="sh-text">"${script.hook}"</div></div>
+    ${(script.sections||[]).map((s, i) => `
+      <div class="script-section anim-in" style="animation-delay:${(i+1)*0.06}s;">
+        <div class="ss-label">${s.label}</div>
+        <div class="ss-content">${s.content}</div>
+      </div>
+    `).join('')}
+    <div class="script-outro anim-in"><div class="so-label">🎬 OUTRO</div><div class="sh-text">${script.outro}</div></div>
+    <div class="copy-btn" id="copyScriptBtn">📋 Teljes vázlat másolása</div>
+  `;
+  document.getElementById('copyScriptBtn').addEventListener('click', (e) => copyToClipboard(e.target, fullText));
+}
+
+function copyToClipboard(btn, text){
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Másolva';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function showSkeleton(){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = `
+    <div class="skeleton-card"><div class="skeleton-line w60"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w40"></div><div class="skeleton-line w85"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w40"></div><div class="skeleton-line w85"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w60"></div></div>
+  `;
+}
+
+async function saveHistory(topic, script){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.scriptHistory) ? meta.scriptHistory : [];
+  history.unshift({ ts: Date.now(), topic, script });
+  await saveVfMeta({ scriptHistory: history.slice(0, 5) });
+  renderHistory();
+}
+
+function renderHistory(){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.scriptHistory) ? meta.scriptHistory : [];
+  const section = document.getElementById('historySection');
+  if (history.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const list = document.getElementById('historyList');
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" data-idx="${i}">
+      <div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')}</div>
+      ${h.topic}
+    </div>
+  `).join('');
+  list.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.dataset.idx, 10);
+      renderScript(history[idx].script);
+    });
+  });
+}
+
+async function generateScript(){
+  if (renderUsage()) return;
+  const topic = document.getElementById('topicInput').value.trim();
+  if (!topic){ alert('Add meg a videó témáját!'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  const wrap = document.getElementById('resultsWrap');
+  btn.disabled = true; btn.textContent = '⚡ Írás…'; btn.classList.add('loading');
+  showSkeleton();
+
+  const meta = vfMeta();
+  const profile = meta.creatorProfile || {};
+
+  try{
+    const token = await Clerk.session.getToken();
+    const res = await fetch('/api/generate-script', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ topic, game: profile.mainGame, styles: profile.styles, channelName: profile.channelName }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
+    renderScript(data);
+    await incrementUsage();
+    await saveHistory(topic, data);
+    renderUsage();
+  }catch(e){
+    wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = '⚡ Vázlat írása'; btn.classList.remove('loading');
+  }
+}
+
+window.addEventListener('load', async function () {
+  try {
+    await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
+    Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+
+    const meta = vfMeta();
+    if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
+
+    renderIdeaPicker();
+    renderUsage();
+    renderHistory();
+    document.getElementById('dashShell').classList.add('ready');
+  } catch (e) {
+    document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
+    console.error(e);
+  }
+});
+</script>
+
+</body>
+</html>
