@@ -246,8 +246,9 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 /* XP sáv */
 .level-info{width:100%;}
 .level-title{font-weight:700;font-size:14.5px;margin-bottom:9px;font-family:var(--font-heading);}
-.level-track{height:10px;background:#0D0912;border-radius:6px;overflow:hidden;border:1px solid var(--line);}
-.level-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--hot));border-radius:6px;width:0%;box-shadow:0 0 12px 0 var(--brand);transition:width .8s cubic-bezier(.4,0,.2,1);}
+.level-track{height:10px;background:#0D0912;border-radius:6px;overflow:hidden;border:1px solid var(--line);position:relative;}
+.level-track::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background-image:repeating-linear-gradient(90deg,transparent 0 16px, rgba(0,0,0,0.45) 16px 18px);}
+.level-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--hot));border-radius:6px;width:0%;box-shadow:0 0 12px 0 var(--brand);transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;z-index:1;}
 .level-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:8px;}
 
 .channel-chip{display:flex;align-items:center;gap:10px;}

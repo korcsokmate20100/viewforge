@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
@@ -50,6 +50,7 @@
       <div class="dash-tabs anim-in" style="animation-delay:.05s;">
         <div class="dash-tab active" data-tab="profile">👤 Profilom</div>
         <div class="dash-tab" data-tab="tools">🧰 Eszközeid</div>
+        <div class="dash-tab" data-tab="activity">🕐 Aktivitás</div>
       </div>
 
       <div class="dash-tab-panel" id="tabProfile">
@@ -98,11 +99,6 @@
           </div>
         </div>
 
-        <div class="profile-sub-card anim-in" style="animation-delay:.3s;margin-top:16px;">
-          <div class="psc-label">🕐 Legutóbbi aktivitás</div>
-          <div id="activityFeed"></div>
-        </div>
-
         <div class="edit-profile-form" id="editProfileForm" style="display:none;margin-top:16px;">
           <label class="field-label">Fő játék</label>
           <input type="text" class="field-input" id="editGameInput" placeholder="pl. Minecraft, Fortnite, Valorant" />
@@ -118,6 +114,13 @@
             <button class="btn btn-primary btn-sm" id="saveProfileBtn" style="flex:1;justify-content:center;">Mentés</button>
             <button class="btn btn-ghost btn-sm" id="cancelProfileBtn">Mégse</button>
           </div>
+        </div>
+      </div>
+
+      <div class="dash-tab-panel" id="tabActivity" style="display:none;">
+        <div class="profile-sub-card anim-in">
+          <div class="psc-label">🕐 Legutóbbi aktivitás</div>
+          <div id="activityFeed"></div>
         </div>
       </div>
 
@@ -258,8 +261,9 @@ function setupTabs(){
     tab.addEventListener('click', () => {
       document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById('tabTools').style.display = tab.dataset.tab === 'tools' ? 'block' : 'none';
       document.getElementById('tabProfile').style.display = tab.dataset.tab === 'profile' ? 'block' : 'none';
+      document.getElementById('tabTools').style.display = tab.dataset.tab === 'tools' ? 'block' : 'none';
+      document.getElementById('tabActivity').style.display = tab.dataset.tab === 'activity' ? 'block' : 'none';
     });
   });
 }
@@ -300,8 +304,9 @@ function renderDashboard(){
   document.getElementById('usageText').textContent = usage;
   document.getElementById('usageLimitText').textContent = info.dailyLimit ? info.dailyLimit : (info.monthlyLimit === Infinity ? '∞' : info.monthlyLimit + '/hó');
 
-  if (profile.thumbnail){
-    document.getElementById('channelThumb').src = profile.thumbnail;
+  const avatarUrl = Clerk.user.imageUrl || profile.thumbnail;
+  if (avatarUrl){
+    document.getElementById('channelThumb').src = avatarUrl;
     document.getElementById('channelThumb').style.display = 'block';
   }
   document.getElementById('channelNameLabel').textContent = profile.channelName || '—';
