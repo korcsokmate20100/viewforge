@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
@@ -48,43 +48,13 @@
       <div class="dash-greet anim-in" style="margin-bottom:18px;">Üdv újra<span id="userName">!</span> 🎮</div>
 
       <div class="dash-tabs anim-in" style="animation-delay:.05s;">
-        <div class="dash-tab active" data-tab="tools">🧰 Eszközeid</div>
-        <div class="dash-tab" data-tab="profile">👤 Profilom</div>
+        <div class="dash-tab active" data-tab="profile">👤 Profilom</div>
+        <div class="dash-tab" data-tab="tools">🧰 Eszközeid</div>
       </div>
 
-      <div class="dash-tab-panel" id="tabTools">
-        <div class="tools-nav-grid">
-          <a class="tool-nav-card anim-in" style="animation-delay:.08s;" href="video-ideas.html">
-            <div class="tool-ico">💡</div>
-            <div class="tool-name">Video Ideas</div>
-            <div class="tool-desc">Konkrét videó-ötletek a játékodhoz</div>
-          </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.14s;" href="viral-titles.html">
-            <div class="tool-ico">🔥</div>
-            <div class="tool-name">Viral Titles</div>
-            <div class="tool-desc">Cím-variációk CTR-becsléssel</div>
-          </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.2s;" href="thumbnail-ai.html">
-            <div class="tool-ico">🖼</div>
-            <div class="tool-name">Thumbnail AI</div>
-            <div class="tool-desc">Borítókép elemzés és pontszám</div>
-          </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.26s;" href="content-planner.html">
-            <div class="tool-ico">📅</div>
-            <div class="tool-name">Content Planner</div>
-            <div class="tool-desc">Heti tartalomterv</div>
-          </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.32s;" href="video-script.html">
-            <div class="tool-ico">🎬</div>
-            <div class="tool-name">Video Script</div>
-            <div class="tool-desc">Ötletből forgatásra kész vázlat</div>
-          </a>
-        </div>
-      </div>
-
-      <div class="dash-tab-panel" id="tabProfile" style="display:none;">
-        <div class="profile-card anim-in">
-          <div class="pc-identity">
+      <div class="dash-tab-panel" id="tabProfile">
+        <div class="profile-row">
+          <div class="profile-sub-card anim-in" style="animation-delay:.05s;">
             <div class="channel-chip">
               <img id="channelThumb" src="" alt="" style="display:none;" />
               <div>
@@ -93,27 +63,33 @@
               </div>
             </div>
             <div class="edit-profile-btn" id="editProfileBtn" title="Profil szerkesztése">✏️</div>
+          </div>
+
+          <div class="profile-sub-card anim-in" style="animation-delay:.1s;">
+            <div class="psc-label">Csomagod</div>
             <div class="pc-plan">
               <span class="plan-bar-badge" id="planBadge">Free trial</span>
               <span class="pc-usage"><b id="usageText">0</b>/<span id="usageLimitText">5</span> ma</span>
             </div>
             <div class="plan-switch-row" id="planSwitchRow"></div>
           </div>
+        </div>
 
-          <div class="pc-divider"></div>
-
+        <div class="profile-sub-card anim-in" style="animation-delay:.15s;margin-top:16px;">
+          <div class="psc-label">Creator Level</div>
           <div class="level-info">
             <div class="level-title" id="levelTitle">Creator Level</div>
             <div class="level-track"><div class="level-fill" id="levelFill"></div></div>
             <div class="level-pct" id="levelPctText">0%</div>
           </div>
+        </div>
 
-          <div class="pc-divider"></div>
-
+        <div class="profile-sub-card anim-in" style="animation-delay:.2s;margin-top:16px;">
+          <div class="psc-label">Statisztikák</div>
           <div class="stats-strip" id="statsStrip"></div>
         </div>
 
-        <div class="edit-profile-form" id="editProfileForm" style="display:none;">
+        <div class="edit-profile-form" id="editProfileForm" style="display:none;margin-top:16px;">
           <label class="field-label">Fő játék</label>
           <input type="text" class="field-input" id="editGameInput" placeholder="pl. Minecraft, Fortnite, Valorant" />
           <label class="field-label">Stílus (válassz 1-2-t)</label>
@@ -128,6 +104,36 @@
             <button class="btn btn-primary btn-sm" id="saveProfileBtn" style="flex:1;justify-content:center;">Mentés</button>
             <button class="btn btn-ghost btn-sm" id="cancelProfileBtn">Mégse</button>
           </div>
+        </div>
+      </div>
+
+      <div class="dash-tab-panel" id="tabTools" style="display:none;">
+        <div class="tools-nav-grid">
+          <a class="tool-nav-card anim-in" style="animation-delay:.05s;" href="video-ideas.html">
+            <div class="tool-ico">💡</div>
+            <div class="tool-name">Video Ideas</div>
+            <div class="tool-desc">Konkrét videó-ötletek a játékodhoz</div>
+          </a>
+          <a class="tool-nav-card anim-in" style="animation-delay:.1s;" href="viral-titles.html">
+            <div class="tool-ico">🔥</div>
+            <div class="tool-name">Viral Titles</div>
+            <div class="tool-desc">Cím-variációk CTR-becsléssel</div>
+          </a>
+          <a class="tool-nav-card anim-in" style="animation-delay:.15s;" href="thumbnail-ai.html">
+            <div class="tool-ico">🖼</div>
+            <div class="tool-name">Thumbnail AI</div>
+            <div class="tool-desc">Borítókép elemzés és pontszám</div>
+          </a>
+          <a class="tool-nav-card anim-in" style="animation-delay:.2s;" href="content-planner.html">
+            <div class="tool-ico">📅</div>
+            <div class="tool-name">Content Planner</div>
+            <div class="tool-desc">Heti tartalomterv</div>
+          </a>
+          <a class="tool-nav-card anim-in" style="animation-delay:.25s;" href="video-script.html">
+            <div class="tool-ico">🎬</div>
+            <div class="tool-name">Video Script</div>
+            <div class="tool-desc">Ötletből forgatásra kész vázlat</div>
+          </a>
         </div>
       </div>
 
