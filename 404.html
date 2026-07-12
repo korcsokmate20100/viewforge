@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oldal nem található — ViewForge</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=30">
+<style>
+.err-shell{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;position:relative;overflow:hidden;}
+.err-shell::before{content:"";position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,var(--brand-soft),transparent 65%);pointer-events:none;}
+.err-code{font-family:var(--font-display);font-size:clamp(90px,18vw,160px);line-height:1;background:linear-gradient(135deg,var(--brand),var(--hot));-webkit-background-clip:text;background-clip:text;color:transparent;position:relative;z-index:1;}
+.err-title{font-size:22px;font-weight:600;margin:12px 0 10px;position:relative;z-index:1;}
+.err-sub{color:var(--text-dim);font-size:14.5px;max-width:420px;margin-bottom:32px;position:relative;z-index:1;}
+.err-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+  </div>
+</nav>
+
+<div class="err-shell">
+  <div class="err-code">404</div>
+  <div class="err-title">Ez a videó-ötlet nem létezik 🎮</div>
+  <div class="err-sub">Az oldal, amit keresel, nem található — lehet, hogy elgépelted a linket, vagy már nem létezik.</div>
+  <div class="err-actions">
+    <a class="btn btn-primary" href="index.html">🏠 Vissza a főoldalra</a>
+    <a class="btn btn-ghost" href="dashboard.html">📊 Dashboard megnyitása</a>
+  </div>
+</div>
+
+</body>
+</html>
