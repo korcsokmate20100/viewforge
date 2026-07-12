@@ -125,7 +125,7 @@ h1.hero-title .hl{color:var(--brand);}
 .sec-sub{color:var(--text-dim);font-size:15.5px;}
 
 /* ---------- Tool cards (landing) ---------- */
-.tool-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 @media (max-width:900px){ .tool-grid{grid-template-columns:repeat(2,1fr);} }
 @media (max-width:560px){ .tool-grid{grid-template-columns:1fr;} }
 .tool-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;transition:transform .25s ease, border-color .25s ease;}
