@@ -178,8 +178,13 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 
 /* Player Card — hero-elem a Profilom fül tetején */
 @keyframes ringSpin{ to{ transform:rotate(360deg); } }
+@keyframes cardGlowDrift{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-24px,18px) scale(1.15);}}
+@keyframes cardGlowDrift2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-16px) scale(1.1);}}
+@keyframes gridPan{0%{background-position:0 0;}100%{background-position:60px 60px;}}
 .player-card{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--surface),var(--surface-soft));border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin-bottom:16px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
-.player-card::before{content:"";position:absolute;top:-40%;right:-10%;width:260px;height:260px;background:radial-gradient(circle,var(--brand-soft),transparent 65%);pointer-events:none;}
+.player-card::before{content:"";position:absolute;top:-30%;right:-5%;width:280px;height:280px;background:radial-gradient(circle,var(--brand-soft),transparent 65%);pointer-events:none;animation:cardGlowDrift 9s ease-in-out infinite;}
+.player-card::after{content:"";position:absolute;bottom:-30%;left:10%;width:220px;height:220px;background:radial-gradient(circle,rgba(255,77,141,0.14),transparent 65%);pointer-events:none;animation:cardGlowDrift2 11s ease-in-out infinite;}
+.player-card-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.035) 1px,transparent 1px);background-size:28px 28px;animation:gridPan 6s linear infinite;pointer-events:none;}
 .player-avatar-wrap{position:relative;width:68px;height:68px;flex-shrink:0;border-radius:50%;}
 .player-avatar-wrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(from 0deg,var(--brand),var(--hot),var(--gold),var(--brand));animation:ringSpin 5s linear infinite;}
 .player-avatar-wrap::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--ink);}
