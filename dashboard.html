@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=22">
+<link rel="stylesheet" href="style.css?v=23">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
@@ -69,6 +69,23 @@
             <div class="level-track"><div class="level-fill" id="levelFill"></div></div>
             <div class="level-pct" id="levelPctText">0%</div>
           </div>
+
+          <div class="edit-profile-form" id="editProfileForm" style="display:none;">
+            <label class="field-label">Fő játék</label>
+            <input type="text" class="field-input" id="editGameInput" placeholder="pl. Minecraft, Fortnite, Valorant" />
+            <label class="field-label">Stílus (válassz 1-2-t)</label>
+            <div class="chip-row" id="editStyleChips">
+              <div class="chip" data-style="Vicces">😂 Vicces</div>
+              <div class="chip" data-style="Kihívás">🎯 Kihívás</div>
+              <div class="chip" data-style="Story">📖 Story</div>
+              <div class="chip" data-style="Tutorial">🎓 Tutorial</div>
+              <div class="chip" data-style="Competitive">🏆 Competitive</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-primary btn-sm" id="saveProfileBtn" style="flex:1;justify-content:center;">Mentés</button>
+              <button class="btn btn-ghost btn-sm" id="cancelProfileBtn">Mégse</button>
+            </div>
+          </div>
         </div>
 
         <div class="profile-row">
@@ -96,23 +113,6 @@
           <div class="profile-sub-card anim-in" style="animation-delay:.25s;">
             <div class="psc-label">🏆 Eredmények</div>
             <div class="badge-grid" id="badgeGrid"></div>
-          </div>
-        </div>
-
-        <div class="edit-profile-form" id="editProfileForm" style="display:none;margin-top:16px;">
-          <label class="field-label">Fő játék</label>
-          <input type="text" class="field-input" id="editGameInput" placeholder="pl. Minecraft, Fortnite, Valorant" />
-          <label class="field-label">Stílus (válassz 1-2-t)</label>
-          <div class="chip-row" id="editStyleChips">
-            <div class="chip" data-style="Vicces">😂 Vicces</div>
-            <div class="chip" data-style="Kihívás">🎯 Kihívás</div>
-            <div class="chip" data-style="Story">📖 Story</div>
-            <div class="chip" data-style="Tutorial">🎓 Tutorial</div>
-            <div class="chip" data-style="Competitive">🏆 Competitive</div>
-          </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn btn-primary btn-sm" id="saveProfileBtn" style="flex:1;justify-content:center;">Mentés</button>
-            <button class="btn btn-ghost btn-sm" id="cancelProfileBtn">Mégse</button>
           </div>
         </div>
       </div>
