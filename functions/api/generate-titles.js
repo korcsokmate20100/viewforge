@@ -90,7 +90,7 @@ export async function onRequestPost(context){
   if (!API_KEY) return new Response(JSON.stringify({ error: 'A GEMINI_API_KEY nincs beállítva a szerveren.' }), { status: 500, headers: CORS });
 
   try {
-    const { topic, channelName, game, styles } = await request.json();
+    const { topic, channelName, game, styles, aiTips } = await request.json();
     if (!topic) return new Response(JSON.stringify({ error: 'Hiányzik a videó témája.' }), { status: 400, headers: CORS });
 
     const prompt = `Te egy elit YouTube cím-optimalizáló szakértő vagy, aki több millió megtekintést hozó gamer címeket írt.
@@ -108,6 +108,7 @@ Használj legalább 3 KÜLÖNBÖZŐ bevált cím-mintát az 5 közül, ne mind u
 
 Minden cím legyen rövid (max ~60 karakter), és a tényleges tartalmat tükrözze — ne ígérjen olyat, ami nincs a videóban.
 
+${(aiTips && aiTips.length) ? `\nA felhasználó saját tanításai — EZEKET MINDIG vedd figyelembe:\n${aiTips.map(t => '- ' + t).join('\n')}\n` : ''}
 Adj 5 különböző címváltozatot magyarul. Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást:
 [
   {"title": "cím szövege", "ctr": 1-5 közötti szám (becsült CTR erősség)}

@@ -256,6 +256,7 @@ async function generateIdeas(){
         styles: selectedStyles,
         goal: document.getElementById('goalSelect').value,
         channelName: profile.channelName,
+        aiTips: (meta.aiTips || []).map(t => t.text),
       }),
     });
     const data = await res.json();

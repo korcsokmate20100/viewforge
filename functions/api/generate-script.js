@@ -90,7 +90,7 @@ export async function onRequestPost(context){
   if (!API_KEY) return new Response(JSON.stringify({ error: 'A GEMINI_API_KEY nincs beállítva a szerveren.' }), { status: 500, headers: CORS });
 
   try {
-    const { topic, game, styles, channelName } = await request.json();
+    const { topic, game, styles, channelName, aiTips } = await request.json();
     if (!topic) return new Response(JSON.stringify({ error: 'Hiányzik a videó témája.' }), { status: 400, headers: CORS });
 
     const prompt = `Te egy elit YouTube gamer videó-forgatókönyvíró vagy, aki több millió megtekintést hozó videók vázlatait írta.
@@ -106,6 +106,7 @@ Videó ötlet/téma: ${topic}
 - Az utolsó szakasz legyen a csúcspont/kifizetődés
 - Az outro legyen természetes, ne tolakodó feliratkozás-kérés
 
+${(aiTips && aiTips.length) ? `\nA felhasználó saját tanításai — EZEKET MINDIG vedd figyelembe:\n${aiTips.map(t => '- ' + t).join('\n')}\n` : ''}
 Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást:
 {
   "hook": "pontos nyitó mondat vagy szituáció",

@@ -184,7 +184,7 @@ async function generateTitles(){
     const res = await fetch('/api/generate-titles', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ topic, channelName: profile.channelName, game: profile.mainGame, styles: profile.styles }),
+      body: JSON.stringify({ topic, channelName: profile.channelName, game: profile.mainGame, styles: profile.styles, aiTips: (meta.aiTips || []).map(t => t.text) }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');

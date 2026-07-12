@@ -192,7 +192,7 @@ async function generatePlan(){
     const res = await fetch('/api/generate-plan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ uploadsPerWeek, game: profile.mainGame, styles: profile.styles, channelName: profile.channelName }),
+      body: JSON.stringify({ uploadsPerWeek, game: profile.mainGame, styles: profile.styles, channelName: profile.channelName, aiTips: (vfMeta().aiTips || []).map(t => t.text) }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');

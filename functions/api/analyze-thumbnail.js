@@ -90,7 +90,7 @@ export async function onRequestPost(context){
   if (!API_KEY) return new Response(JSON.stringify({ error: 'A GEMINI_API_KEY nincs beállítva a szerveren.' }), { status: 500, headers: CORS });
 
   try {
-    const { imageBase64, mimeType } = await request.json();
+    const { imageBase64, mimeType, aiTips } = await request.json();
     if (!imageBase64) return new Response(JSON.stringify({ error: 'Hiányzik a kép.' }), { status: 400, headers: CORS });
 
     const prompt = `Te egy elit YouTube thumbnail-elemző szakértő vagy, aki több száz gamer csatorna borítóképét tesztelte A/B teszttel.
@@ -102,6 +102,7 @@ Elemezd ezt a borítóképet PONTOSAN ezek alapján:
 4. Szöveg mennyisége és olvashatósága mobilon, kis méretben is
 5. Vizuális fókusz — nincs-e túl sok elem, ami elvonja a figyelmet a lényegről
 
+${(aiTips && aiTips.length) ? `\nA felhasználó saját tanításai — EZEKET MINDIG vedd figyelembe:\n${aiTips.map(t => '- ' + t).join('\n')}\n` : ''}
 Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást, pontosan ilyen formában:
 {
   "score": 0-100 közötti szám,

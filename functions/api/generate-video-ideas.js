@@ -110,7 +110,7 @@ export async function onRequestPost(context){
   }
 
   try {
-    const { game, platform, channelSize, styles, goal, channelName } = await request.json();
+    const { game, platform, channelSize, styles, goal, channelName, aiTips } = await request.json();
     if (!game) {
       return new Response(JSON.stringify({ error: 'Hiányzik a játék neve.' }), { status: 400, headers: CORS });
     }
@@ -130,6 +130,7 @@ Szabályok a jó ötlethez:
 - Vedd figyelembe a csatorna méretét: kis csatornánál merészebb, figyelemfelkeltőbb formátum javasolt, nagy csatornánál a márka konzisztenciája is számít
 - Kerüld a klisét és azt, amit már ezerszer láttak — legyen benne egyedi csavar
 
+${(aiTips && aiTips.length) ? `\nA felhasználó saját tanításai — EZEKET MINDIG vedd figyelembe:\n${aiTips.map(t => '- ' + t).join('\n')}\n` : ''}
 Adj 3 különböző jellegű, konkrét videó-ötletet magyarul (ne mind ugyanolyan felépítésű legyen). Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, semmi mást (nincs bevezető, nincs magyarázat, nincs markdown code block jelölés), pontosan ilyen formában:
 [
   {"title": "videó cím", "why": "1 konkrét mondat, miért működhet EBBEN a niche-ben", "thumbnail": "rövid thumbnail-ötlet", "hook": "az első pár másodperc mondata", "ctr": 1-5 közötti szám}

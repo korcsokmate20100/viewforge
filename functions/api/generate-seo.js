@@ -90,7 +90,7 @@ export async function onRequestPost(context){
   if (!API_KEY) return new Response(JSON.stringify({ error: 'A GEMINI_API_KEY nincs beállítva a szerveren.' }), { status: 500, headers: CORS });
 
   try {
-    const { topic, game, styles, channelName } = await request.json();
+    const { topic, game, styles, channelName, aiTips } = await request.json();
     if (!topic) return new Response(JSON.stringify({ error: 'Hiányzik a videó témája.' }), { status: 400, headers: CORS });
 
     const prompt = `Te egy elit YouTube SEO-szakértő vagy, aki gamer csatornák kereshetőségét optimalizálja.
@@ -104,6 +104,7 @@ Készíts:
 1. Egy YouTube-leírást (kb. 3-4 bekezdés): az első 1-2 mondat legyen a legfontosabb (ez jelenik meg keresésben), tartalmazzon természetesen beépített kulcsszavakat, végén 3-5 releváns hashtaget
 2. 12-15 SEO címkét (tags) — keverd a széles (pl. játék neve) és szűk, konkrét kifejezéseket
 
+${(aiTips && aiTips.length) ? `\nA felhasználó saját tanításai — EZEKET MINDIG vedd figyelembe:\n${aiTips.map(t => '- ' + t).join('\n')}\n` : ''}
 Válaszolj KIZÁRÓLAG egy valid JSON objektummal, semmi mást:
 {
   "description": "a teljes leírás szövege, sortörésekkel \\n karakterrel jelölve",

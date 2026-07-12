@@ -116,6 +116,18 @@
             <div class="badge-grid" id="badgeGrid"></div>
           </div>
         </div>
+
+        <div class="profile-sub-card anim-in" style="animation-delay:.3s;margin-top:16px;">
+          <div class="psc-label">🧠 Tanítsd az AI-t</div>
+          <div style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px;">
+            Írj ide tippeket, stílus-preferenciákat, amiket a csatornád AI-eszközei mindig figyelembe vesznek generáláskor. Minél többet írsz, annál pontosabb lesz.
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <input type="text" class="field-input" id="aiTipInput" placeholder="pl. Mindig legyen benne humor és self-irónia" style="margin-bottom:0;flex:1;" />
+            <button class="btn btn-primary btn-sm" id="addTipBtn">+ Hozzáadás</button>
+          </div>
+          <div id="aiTipsList"></div>
+        </div>
       </div>
 
       <div class="dash-tab-panel" id="tabActivity" style="display:none;">
@@ -325,6 +337,7 @@ function renderDashboard(){
   renderToolUsageChart(meta);
   renderBadges(meta);
   renderActivityFeed(meta);
+  renderAiTips(meta);
   setupProfileEditor(profile);
   updateToolAccess(meta.plan || 'free');
 }
@@ -451,6 +464,43 @@ function animateCountUp(el, target, duration){
   }
   requestAnimationFrame(tick);
 }
+
+function renderAiTips(meta){
+  const tips = Array.isArray(meta.aiTips) ? meta.aiTips : [];
+  const list = document.getElementById('aiTipsList');
+  if (tips.length === 0){
+    list.innerHTML = '<div class="result-empty" style="padding:14px 0;font-size:12.5px;">Még nincs egyetlen tipped sem — írj egyet fentebb, hogy okosabb legyen az AI!</div>';
+    return;
+  }
+  list.innerHTML = tips.map((t, i) => `
+    <div class="history-item" data-idx="${i}">
+      <div class="h-content">💡 ${t.text}</div>
+      <div class="history-del" data-del="${i}">✕</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.history-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.del, 10);
+      tips.splice(idx, 1);
+      await saveVfMeta({ aiTips: tips });
+      renderAiTips(vfMeta());
+    });
+  });
+}
+
+document.getElementById('addTipBtn').addEventListener('click', async () => {
+  const input = document.getElementById('aiTipInput');
+  const text = input.value.trim();
+  if (!text){ showToast('Írj be egy tippet előbb!', 'error'); return; }
+  const meta = vfMeta();
+  const tips = Array.isArray(meta.aiTips) ? meta.aiTips : [];
+  tips.unshift({ ts: Date.now(), text });
+  await saveVfMeta({ aiTips: tips.slice(0, 15) });
+  input.value = '';
+  renderAiTips(vfMeta());
+  showToast('Tipp elmentve — az AI mostantól figyelembe veszi! 🧠', 'success');
+});
 
 function renderStats(meta){
   const total = meta.totalGenerations || 0;

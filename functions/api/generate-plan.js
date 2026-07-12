@@ -90,7 +90,7 @@ export async function onRequestPost(context){
   if (!API_KEY) return new Response(JSON.stringify({ error: 'A GEMINI_API_KEY nincs beállítva a szerveren.' }), { status: 500, headers: CORS });
 
   try {
-    const { uploadsPerWeek, game, styles, channelName } = await request.json();
+    const { uploadsPerWeek, game, styles, channelName, aiTips } = await request.json();
     if (!uploadsPerWeek) return new Response(JSON.stringify({ error: 'Hiányzik a heti feltöltési gyakoriság.' }), { status: 400, headers: CORS });
 
     const prompt = `Te egy elit YouTube tartalom-stratéga vagy, aki csatornák növekedési tervét építi fel.
@@ -107,6 +107,7 @@ KRITIKUS SZABÁLY: a válasz JSON tömbnek PONTOSAN ${uploadsPerWeek} elemet kel
 - A legjobb napokra időzítsd (hétfő/szerda/péntek/hétvége a gaming közönségnél jellemzően erős)
 - Minden elem legyen KONKRÉT ötlet, ne csak "készíts egy videót" jellegű általánosság
 
+${(aiTips && aiTips.length) ? `\nA felhasználó saját tanításai — EZEKET MINDIG vedd figyelembe:\n${aiTips.map(t => '- ' + t).join('\n')}\n` : ''}
 Válaszolj KIZÁRÓLAG egy valid JSON tömbbel, PONTOSAN ${uploadsPerWeek} elemmel, semmi mást:
 [
   {"day": "nap magyarul", "type": "Short / Fő videó / Stream / stb.", "title": "konkrét tartalom-ötlet"}

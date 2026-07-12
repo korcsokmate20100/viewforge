@@ -213,7 +213,7 @@ async function analyzeThumbnail(){
     const res = await fetch('/api/analyze-thumbnail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ imageBase64: selectedBase64, mimeType: selectedFile.type }),
+      body: JSON.stringify({ imageBase64: selectedBase64, mimeType: selectedFile.type, aiTips: (vfMeta().aiTips || []).map(t => t.text) }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
