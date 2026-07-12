@@ -165,3 +165,23 @@ async function initSettingsPanel(){
 
   refreshPanelUI(vfMeta().settings || {});
 }
+
+/** Elegáns toast-értesítés az alert() helyett. type: 'info' | 'success' | 'error' */
+function showToast(message, type){
+  type = type || 'info';
+  let container = document.getElementById('toastContainer');
+  if (!container){
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('out');
+    setTimeout(() => toast.remove(), 300);
+  }, 3800);
+}

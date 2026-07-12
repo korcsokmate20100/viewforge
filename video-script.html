@@ -6,7 +6,7 @@
 <title>Video Script Writer — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=23">
+<link rel="stylesheet" href="style.css?v=24">
 <script src="settings.js?v=1"></script>
 <style>
 .script-hook{background:rgba(255,193,69,0.08);border:1px solid rgba(255,193,69,0.3);border-radius:12px;padding:16px;margin-bottom:18px;}
@@ -195,7 +195,7 @@ function renderHistory(){
 async function generateScript(){
   if (renderUsage()) return;
   const topic = document.getElementById('topicInput').value.trim();
-  if (!topic){ alert('Add meg a videó témáját!'); return; }
+  if (!topic){ showToast('Add meg a videó témáját!', 'error'); return; }
 
   const btn = document.getElementById('generateBtn');
   const wrap = document.getElementById('resultsWrap');

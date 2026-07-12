@@ -6,7 +6,7 @@
 <title>Dashboard — ViewForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=23">
+<link rel="stylesheet" href="style.css?v=24">
 <script src="settings.js?v=1"></script>
 </head>
 <body class="page-fade">
@@ -62,6 +62,7 @@
           <div class="player-info">
             <div class="player-name-row">
               <div class="c-name player-name" id="channelNameLabel">—</div>
+              <div class="edit-profile-btn" id="refreshChannelBtn" title="Csatorna-adatok frissítése">🔄</div>
               <div class="edit-profile-btn" id="editProfileBtn" title="Profil szerkesztése">✏️</div>
             </div>
             <div class="c-meta player-meta" id="channelMetaLabel">—</div>
@@ -236,7 +237,7 @@ async function saveVfMeta(partial){
 
 async function createProfile(){
   const game = document.getElementById('mainGameInput').value.trim();
-  if (!game){ alert('Add meg a fő játékodat!'); return; }
+  if (!game){ showToast('Add meg a fő játékodat!', 'error'); return; }
   const channel = window.__foundChannel || {};
 
   const params = new URLSearchParams(window.location.search);
@@ -338,7 +339,7 @@ function updateToolAccess(planId){
 }
 function blockLockedTool(e){
   e.preventDefault();
-  alert('Ez az eszköz a Basic vagy Pro csomagtól érhető el. Válts csomagot a Profilom fülön!');
+  showToast('Ez az eszköz a Basic vagy Pro csomagtól érhető el 🔒', 'error');
 }
 
 const TOOL_META = [
@@ -488,7 +489,44 @@ function renderLevel(totalXp){
 }
 
 let editSelectedStyles = [];
+async function refreshChannelData(profile){
+  if (!profile.channelId){
+    showToast('Ehhez a profilhoz nincs elmentve csatorna-azonosító, kézzel add meg újra a szerkesztésnél.', 'error');
+    return;
+  }
+  const btn = document.getElementById('refreshChannelBtn');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳';
+  try{
+    const token = await Clerk.session.getToken();
+    const res = await fetch('/api/channel-lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ url: 'https://www.youtube.com/channel/' + profile.channelId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
+
+    const meta = vfMeta();
+    await saveVfMeta({
+      creatorProfile: {
+        ...meta.creatorProfile,
+        channelName: data.name,
+        thumbnail: data.thumbnail,
+        subscriberCount: data.subscriberCount,
+      },
+    });
+    renderDashboard();
+    showToast('Csatorna-adatok frissítve! ✓', 'success');
+  }catch(e){
+    showToast('Nem sikerült frissíteni: ' + e.message, 'error');
+  }finally{
+    btn.textContent = originalText;
+  }
+}
+
 function setupProfileEditor(profile){
+  document.getElementById('refreshChannelBtn').onclick = () => refreshChannelData(profile);
   const btn = document.getElementById('editProfileBtn');
   const form = document.getElementById('editProfileForm');
   const cancelBtn = document.getElementById('cancelProfileBtn');
@@ -515,13 +553,14 @@ function setupProfileEditor(profile){
 
   saveBtn.onclick = async () => {
     const game = document.getElementById('editGameInput').value.trim();
-    if (!game){ alert('Add meg a fő játékodat!'); return; }
+    if (!game){ showToast('Add meg a fő játékodat!', 'error'); return; }
     const meta = vfMeta();
     await saveVfMeta({
       creatorProfile: { ...meta.creatorProfile, mainGame: game, styles: editSelectedStyles },
     });
     form.style.display = 'none';
     renderDashboard();
+    showToast('Profil elmentve! ✓', 'success');
   };
 }
 
