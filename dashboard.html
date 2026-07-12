@@ -152,6 +152,11 @@
             <div class="tool-name">Video Script</div>
             <div class="tool-desc">Ötletből forgatásra kész vázlat</div>
           </a>
+          <a class="tool-nav-card anim-in" style="animation-delay:.3s;" href="seo-tools.html" data-tool="seo">
+            <div class="tool-ico">🔎</div>
+            <div class="tool-name">SEO Leírás & Tagek</div>
+            <div class="tool-desc">Kereshető leírás és címkék</div>
+          </a>
         </div>
         <div class="lock-msg" id="lockMsg" style="display:none;">🔒 A Free trial csomaggal csak a Video Ideas érhető el. Válts Basic vagy Pro csomagra a többi eszközhöz.</div>
       </div>
@@ -348,6 +353,7 @@ const TOOL_META = [
   { key:'thumbnail',  label:'Thumbnail AI', icon:'🖼', varColor:'--gold' },
   { key:'plan',       label:'Content Planner', icon:'📅', varColor:'--mint' },
   { key:'script',     label:'Video Script', icon:'🎬', varColor:'--brand' },
+  { key:'seo',        label:'SEO Tagek', icon:'🔎', varColor:'--hot' },
 ];
 
 function renderToolUsageChart(meta){
@@ -380,12 +386,12 @@ const ACHIEVEMENTS = [
   { icon:'🔥', name:'Bemelegítés', check:(m,tools) => (m.totalGenerations||0) >= 5 },
   { icon:'⚡', name:'Gépezet', check:(m,tools) => (m.totalGenerations||0) >= 25 },
   { icon:'💎', name:'Veterán', check:(m,tools) => (m.totalGenerations||0) >= 50 },
-  { icon:'🧰', name:'Multitool', check:(m,tools) => tools >= 5 },
+  { icon:'🧰', name:'Multitool', check:(m,tools) => tools >= 6 },
   { icon:'👑', name:'Rangidős', check:(m,tools) => (Math.floor((m.totalGenerations||0)/XP_PER_LEVEL)+1) >= 5 },
 ];
 
 function renderBadges(meta){
-  const toolsUsed = ['videoIdeasHistory','titlesHistory','thumbnailHistory','planHistory','scriptHistory']
+  const toolsUsed = ['videoIdeasHistory','titlesHistory','thumbnailHistory','planHistory','scriptHistory','seoHistory']
     .filter(key => Array.isArray(meta[key]) && meta[key].length > 0).length;
   const grid = document.getElementById('badgeGrid');
   grid.innerHTML = ACHIEVEMENTS.map(a => {
@@ -410,6 +416,7 @@ function renderActivityFeed(meta){
     { key:'thumbnailHistory', icon:'🖼', label:(h) => 'Thumbnail elemzés: ' + (h.score || '?') + '/100' },
     { key:'planHistory', icon:'📅', label:(h) => 'Tartalomterv: ' + (h.uploadsPerWeek || '') + ' videó/hét' },
     { key:'scriptHistory', icon:'🎬', label:(h) => 'Forgatókönyv: ' + (h.topic || '') },
+    { key:'seoHistory', icon:'🔎', label:(h) => 'SEO leírás+tagek: ' + (h.topic || '') },
   ];
   let items = [];
   sources.forEach(s => {
@@ -453,12 +460,12 @@ function renderStats(meta){
     const diffMs = Date.now() - new Date(Clerk.user.createdAt).getTime();
     memberDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
   }
-  const toolsUsed = ['videoIdeasHistory','titlesHistory','thumbnailHistory','planHistory','scriptHistory']
+  const toolsUsed = ['videoIdeasHistory','titlesHistory','thumbnailHistory','planHistory','scriptHistory','seoHistory']
     .filter(key => Array.isArray(meta[key]) && meta[key].length > 0).length;
 
   document.getElementById('statsStrip').innerHTML = `
     <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Összes generálás</div></div>
-    <div class="stat-box"><div class="stat-num"><span id="statTools">0</span>/5</div><div class="stat-lbl">Kipróbált eszköz</div></div>
+    <div class="stat-box"><div class="stat-num"><span id="statTools">0</span>/6</div><div class="stat-lbl">Kipróbált eszköz</div></div>
     <div class="stat-box"><div class="stat-num" id="statDays">0</div><div class="stat-lbl">Napja tag vagy</div></div>
   `;
   animateCountUp(document.getElementById('statTotal'), total);

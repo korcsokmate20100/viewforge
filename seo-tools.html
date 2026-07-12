@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Leírás & Címke Generátor — ViewForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=24">
+<script src="settings.js?v=1"></script>
+<style>
+.seo-desc-box{background:#0D0912;border:1px solid var(--line);border-radius:10px;padding:16px;font-size:13px;white-space:pre-wrap;line-height:1.6;margin-bottom:14px;}
+.tag-chip-row{display:flex;flex-wrap:wrap;gap:7px;}
+.tag-chip{background:var(--brand-soft);color:var(--brand);border:1px solid rgba(155,95,255,0.3);padding:5px 12px;border-radius:99px;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body class="page-fade">
+
+<div class="wrap" style="max-width:1000px;padding-top:0;">
+  <div class="dash-top">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>ViewForge</a>
+    <div id="userButton"></div>
+  </div>
+
+  <div class="tool-shell" id="dashShell">
+    <a class="back-link" href="dashboard.html">← Vissza a dashboardra</a>
+
+    <div class="anim-in" style="margin-bottom:22px;">
+      <div class="sec-eyebrow">🔎 SEO Leírás & Címke Generátor</div>
+      <h1 class="sec-title" style="font-size:24px;">Kereshető leírás és tagek egy kattintással</h1>
+    </div>
+
+    <div class="tool-grid-2col">
+      <div class="panel anim-in" style="animation-delay:.12s;">
+        <div class="panel-title">Miről szóljon?</div>
+        <div class="panel-sub">Add meg a videó témáját</div>
+
+        <label class="field-label">Videó téma / cím</label>
+        <input type="text" class="field-input" id="topicInput" placeholder="pl. 100 napos túlélés lávává váltó blokkokkal" />
+
+        <button class="btn btn-primary" id="generateBtn" style="width:100%;justify-content:center;margin-top:6px;" onclick="generateSeo()">⚡ Generálás</button>
+        <div id="limitMsg" class="limit-msg" style="display:none;"></div>
+      </div>
+
+      <div class="panel anim-in" style="animation-delay:.28s;">
+        <div class="panel-title">SEO csomag</div>
+        <div class="panel-sub">
+          <span class="usage-pill" id="usagePill">0 / 5 hó</span>
+        </div>
+        <div id="resultsWrap">
+          <div class="result-empty">Add meg a témát balra, és nyomj Generálást →</div>
+        </div>
+        <div class="history-section" id="historySection" style="display:none;">
+          <div class="history-title">Korábbi generálások</div>
+          <div id="historyList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script defer crossorigin="anonymous" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZmFuY3ktYnVsbGZyb2ctNjYuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://fancy-bullfrog-66.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js" type="text/javascript"></script>
+
+<script>
+const PLANS = [
+  {id:'free', name:'Free trial', monthlyLimit:10},
+  {id:'basic', name:'Basic', monthlyLimit:100},
+  {id:'pro', name:'Pro', monthlyLimit:Infinity},
+];
+function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
+function monthStr(){ return new Date().toISOString().slice(0,7); }
+function vfMeta(){ return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {}; }
+async function saveVfMeta(partial){
+  const current = vfMeta();
+  await Clerk.user.update({ unsafeMetadata: { ...Clerk.user.unsafeMetadata, viewforge: { ...current, ...partial } } });
+}
+function currentUsage(meta){ return (meta.usage && meta.usage.month === monthStr()) ? meta.usage.count : 0; }
+
+function renderUsage(){
+  const meta = vfMeta();
+  const info = planInfo(meta.plan || 'free');
+  const used = currentUsage(meta);
+  const limitText = info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó';
+  document.getElementById('usagePill').textContent = limitText;
+  const atLimit = info.monthlyLimit !== Infinity && used >= info.monthlyLimit;
+  const limitMsg = document.getElementById('limitMsg');
+  const btn = document.getElementById('generateBtn');
+  if (atLimit){ limitMsg.style.display = 'block'; limitMsg.textContent = `Elérted a(z) ${info.name} csomag limitjét. Válts nagyobb csomagra a dashboardon.`; btn.disabled = true; }
+  else { limitMsg.style.display = 'none'; btn.disabled = false; }
+  return atLimit;
+}
+async function incrementUsage(){
+  const meta = vfMeta();
+  const used = currentUsage(meta);
+  const totalXp = (meta.totalGenerations || 0) + 1;
+  const toolUsage = { ...(meta.toolUsage || {}) };
+  toolUsage.seo = (toolUsage.seo || 0) + 1;
+  await saveVfMeta({ usage: { count: used + 1, month: monthStr() }, totalGenerations: totalXp, toolUsage });
+}
+
+function renderResult(result){
+  const wrap = document.getElementById('resultsWrap');
+  const fullText = `${result.description}\n\nTagek: ${(result.tags||[]).join(', ')}`;
+  wrap.innerHTML = `
+    <div class="i-label">📝 LEÍRÁS</div>
+    <div class="seo-desc-box anim-in">${(result.description||'').replace(/</g,'&lt;')}</div>
+    <div class="i-label">🏷 TAGEK (${(result.tags||[]).length})</div>
+    <div class="tag-chip-row anim-in" style="animation-delay:.06s;">${(result.tags||[]).map(t=>`<div class="tag-chip">${t}</div>`).join('')}</div>
+    <div class="copy-btn" id="copySeoBtn">📋 Minden másolása</div>
+  `;
+  document.getElementById('copySeoBtn').addEventListener('click', (e) => copyToClipboard(e.target, fullText));
+}
+
+function copyToClipboard(btn, text){
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Másolva';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function showSkeleton(){
+  const wrap = document.getElementById('resultsWrap');
+  wrap.innerHTML = `
+    <div class="skeleton-card"><div class="skeleton-line w85"></div><div class="skeleton-line w85"></div><div class="skeleton-line w60"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line w40"></div></div>
+  `;
+}
+
+async function saveHistory(topic, result){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.seoHistory) ? meta.seoHistory : [];
+  history.unshift({ ts: Date.now(), topic, result });
+  await saveVfMeta({ seoHistory: history.slice(0, 5) });
+  renderHistory();
+}
+
+function renderHistory(){
+  const meta = vfMeta();
+  const history = Array.isArray(meta.seoHistory) ? meta.seoHistory : [];
+  const section = document.getElementById('historySection');
+  if (history.length === 0){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const list = document.getElementById('historyList');
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" data-idx="${i}">
+      <div class="h-content"><div class="h-time">${new Date(h.ts).toLocaleString('hu-HU')}</div>${h.topic}</div>
+      <div class="history-del" data-del="${i}">✕</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.h-content').forEach((el, i) => {
+    el.addEventListener('click', () => renderResult(history[i].result));
+  });
+  list.querySelectorAll('.history-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.del, 10);
+      history.splice(idx, 1);
+      await saveVfMeta({ seoHistory: history });
+      renderHistory();
+    });
+  });
+}
+
+async function generateSeo(){
+  if (renderUsage()) return;
+  const topic = document.getElementById('topicInput').value.trim();
+  if (!topic){ showToast('Add meg a videó témáját!', 'error'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  const wrap = document.getElementById('resultsWrap');
+  btn.disabled = true; btn.textContent = '⚡ Generálás…'; btn.classList.add('loading');
+  showSkeleton();
+
+  const meta = vfMeta();
+  const profile = meta.creatorProfile || {};
+
+  try{
+    const token = await Clerk.session.getToken();
+    const res = await fetch('/api/generate-seo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ topic, game: profile.mainGame, styles: profile.styles, channelName: profile.channelName }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ismeretlen hiba');
+    renderResult(data);
+    await incrementUsage();
+    await saveHistory(topic, data);
+    renderUsage();
+  }catch(e){
+    wrap.innerHTML = `<div class="result-empty" style="color:#FF4D8D;">❌ ${e.message}</div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = '⚡ Generálás'; btn.classList.remove('loading');
+  }
+}
+
+window.addEventListener('load', async function () {
+  try {
+    await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    if (!Clerk.isSignedIn) { window.location.href = 'sign-in.html'; return; }
+    Clerk.mountUserButton(document.getElementById('userButton'), { afterSignOutUrl: 'index.html' });
+    applySettings((vfMeta().settings) || {});
+    initSettingsPanel();
+
+    const meta = vfMeta();
+    if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
+    if ((meta.plan || 'free') === 'free') { window.location.href = 'dashboard.html'; return; }
+
+    document.getElementById('topicInput').value = '';
+    renderUsage();
+    renderHistory();
+    document.getElementById('dashShell').classList.add('ready');
+    document.querySelectorAll('#dashShell .anim-in').forEach(el => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
+  } catch (e) {
+    document.body.innerHTML = '<div class="wrap" style="padding-top:80px;">A Clerk nincs megfelelően beállítva ezen az oldalon.</div>';
+    console.error(e);
+  }
+});
+</script>
+
+</body>
+</html>
