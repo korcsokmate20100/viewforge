@@ -15,6 +15,7 @@
   --font-display:'Bebas Neue',sans-serif;
   --font-heading:'Space Grotesk',sans-serif;
   --font-body:'Inter',sans-serif;
+  --field-bg:#150F1D;
 }
 
 /* Világos mód — a beállítás-panelból kapcsolható */
@@ -26,6 +27,7 @@ html[data-theme="light"]{
   --text:#18101F;
   --text-dim:#6B6478;
   --brand-soft:rgba(155,95,255,0.10);
+  --field-bg:#EFEAF7;
 }
 
 /* Animációk kikapcsolása — a beállítás-panelból kapcsolható */
@@ -109,11 +111,11 @@ h1.hero-title .hl{color:var(--brand);}
 
 /* mock dashboard preview card in hero */
 .preview-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 40px 70px -30px rgba(0,0,0,0.65);}
-.preview-bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line);background:#150F1D;}
+.preview-bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--field-bg);}
 .preview-bar .dot2{width:10px;height:10px;border-radius:50%;}
 .preview-title{margin-left:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);}
 .preview-body{padding:22px;}
-.pv-idea{background:#150F1D;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;opacity:0;animation:fadeSlideUp .5s forwards;}
+.pv-idea{background:var(--field-bg);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;opacity:0;animation:fadeSlideUp .5s forwards;}
 .pv-idea .pv-label{font-size:11px;color:var(--gold);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
 .pv-idea .pv-title{font-family:var(--font-heading);font-weight:600;font-size:15px;}
 .pv-stars{color:var(--gold);font-size:13px;margin-top:6px;}
@@ -208,7 +210,7 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .bar-row{display:grid;grid-template-columns:130px 1fr 24px;align-items:center;gap:10px;margin-bottom:12px;}
 .bar-row:last-child{margin-bottom:0;}
 .bar-label{font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bar-track{height:8px;background:#0D0912;border-radius:5px;overflow:hidden;border:1px solid var(--line);}
+.bar-track{height:8px;background:var(--field-bg);border-radius:5px;overflow:hidden;border:1px solid var(--line);}
 @keyframes shimmerSweep{0%{transform:translateX(-120%);}100%{transform:translateX(220%);}}
 .bar-fill{height:100%;width:0%;border-radius:5px;box-shadow:0 0 8px -1px currentColor;transition:width 1s cubic-bezier(.16,.8,.24,1);position:relative;overflow:hidden;}
 .bar-fill::after{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent);animation:shimmerSweep 2.4s ease-in-out infinite;}
@@ -216,7 +218,7 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 
 /* Kitüntetés-rács */
 .badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.badge-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;background:#0D0912;border:1px solid var(--line);opacity:.4;filter:grayscale(1);transition:all .3s ease;}
+.badge-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;background:var(--field-bg);border:1px solid var(--line);opacity:.4;filter:grayscale(1);transition:all .3s ease;}
 .badge-item.unlocked{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 16px -6px var(--gold);}
 .badge-item:hover{transform:translateY(-3px);}
 .badge-ico{font-size:22px;}
@@ -245,14 +247,14 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .onboard-icon{font-size:40px;margin-bottom:16px;}
 .onboard-title{font-size:22px;font-weight:600;font-family:var(--font-heading);margin-bottom:10px;}
 .onboard-sub{color:var(--text-dim);font-size:14.5px;margin-bottom:26px;}
-.onboard-input{width:100%;background:#150F1D;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:13px 16px;font-size:14.5px;outline:none;margin-bottom:14px;transition:border-color .2s ease;}
+.onboard-input{width:100%;background:var(--field-bg);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:13px 16px;font-size:14.5px;outline:none;margin-bottom:14px;transition:border-color .2s ease;}
 .onboard-input:focus{border-color:var(--brand);}
 .onboard-msg{font-size:13px;color:var(--text-dim);margin-top:12px;min-height:18px;}
 
 /* XP sáv */
 .level-info{width:100%;}
 .level-title{font-weight:700;font-size:14.5px;margin-bottom:9px;font-family:var(--font-heading);}
-.level-track{height:10px;background:#0D0912;border-radius:6px;overflow:hidden;border:1px solid var(--line);position:relative;}
+.level-track{height:10px;background:var(--field-bg);border-radius:6px;overflow:hidden;border:1px solid var(--line);position:relative;}
 .level-track::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background-image:repeating-linear-gradient(90deg,transparent 0 16px, rgba(0,0,0,0.45) 16px 18px);}
 .level-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--hot));border-radius:6px;width:0%;box-shadow:0 0 12px 0 var(--brand);transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;z-index:1;overflow:hidden;}
 .level-fill::before{content:"";position:absolute;top:0;bottom:0;width:35%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);animation:shimmerSweep 2.6s ease-in-out infinite;z-index:3;}
@@ -300,7 +302,7 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .panel-title{font-size:16px;font-weight:600;margin-bottom:4px;}
 .panel-sub{font-size:13px;color:var(--text-dim);margin-bottom:20px;}
 .field-label{font-size:12.5px;color:var(--text-dim);margin-bottom:6px;display:block;}
-.field-input, .field-select{width:100%;background:#150F1D;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:11px 14px;font-size:13.5px;outline:none;margin-bottom:16px;transition:border-color .2s ease;}
+.field-input, .field-select{width:100%;background:var(--field-bg);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:11px 14px;font-size:13.5px;outline:none;margin-bottom:16px;transition:border-color .2s ease;}
 .field-input:focus, .field-select:focus{border-color:var(--brand);}
 .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
 .chip{border:1px solid var(--line);border-radius:99px;padding:7px 15px;font-size:12.5px;cursor:pointer;transition:all .2s ease;color:var(--text-dim);}
@@ -308,12 +310,12 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .chip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);}
 
 .result-empty{color:var(--text-dim);font-size:13.5px;text-align:center;padding:60px 20px;}
-.idea-card{background:#150F1D;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px;}
+.idea-card{background:var(--field-bg);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px;}
 .idea-card .i-label{font-size:11px;color:var(--gold);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;}
 .idea-card .i-title{font-family:var(--font-heading);font-weight:600;font-size:17px;margin-bottom:12px;}
 .idea-card .i-row{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
 .idea-card .i-row b{color:var(--text);}
-.usage-pill{font-size:12px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;background:#150F1D;border:1px solid var(--line);padding:4px 11px;border-radius:99px;}
+.usage-pill{font-size:12px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;background:var(--field-bg);border:1px solid var(--line);padding:4px 11px;border-radius:99px;}
 .limit-msg{font-size:12.5px;color:var(--gold);background:rgba(255,193,69,0.1);border:1px solid rgba(255,193,69,0.3);padding:9px 12px;border-radius:9px;margin-top:12px;line-height:1.5;}
 
 /* ---------- Finomabb animációk ---------- */
@@ -379,6 +381,7 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 
 .settings-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;}
 .settings-toggle-row .st-label{font-size:13.5px;}
+html[data-theme="light"] .mini-toggle{background:#D8D2E8;}
 .mini-toggle{width:38px;height:22px;border-radius:99px;background:#2A2438;position:relative;cursor:pointer;transition:background .25s ease;flex-shrink:0;}
 .mini-toggle.on{background:var(--brand);}
 .mini-toggle::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.4,0,.2,1);}
