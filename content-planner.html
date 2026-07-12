@@ -10,6 +10,8 @@
 <script src="settings.js?v=1"></script>
 <style>
 .plan-row-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line);}
+.plan-script-link{flex-shrink:0;font-size:15px;padding:5px 9px;border-radius:8px;border:1px solid var(--line);transition:all .2s ease;cursor:pointer;}
+.plan-script-link:hover{border-color:var(--brand);background:var(--brand-soft);}
 .plan-row-item:first-child{border-top:none;}
 .plan-day{width:80px;flex-shrink:0;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;color:var(--brand);}
 .plan-type{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--gold);margin-bottom:4px;}
@@ -111,10 +113,11 @@ function renderPlan(plan){
   wrap.innerHTML = plan.map((p, i) => `
     <div class="plan-row-item anim-in" style="animation-delay:${i*0.05}s;">
       <div class="plan-day">${p.day}</div>
-      <div>
+      <div style="flex:1;">
         <div class="plan-type">${p.type}</div>
         <div class="plan-title-text">${p.title}</div>
       </div>
+      <a class="plan-script-link" href="video-script.html?topic=${encodeURIComponent(p.title)}" title="Forgatókönyv írása ehhez">🎬</a>
     </div>
   `).join('') + `<div class="copy-btn" id="copyPlanBtn">📋 Teljes terv másolása</div>`;
 

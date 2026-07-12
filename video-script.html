@@ -110,12 +110,17 @@ async function incrementUsage(){
 
 function renderIdeaPicker(){
   const meta = vfMeta();
-  const history = Array.isArray(meta.videoIdeasHistory) ? meta.videoIdeasHistory : [];
-  const allIdeas = history.flatMap(h => h.ideas || []);
-  if (allIdeas.length === 0) return;
+  const ideasHistory = Array.isArray(meta.videoIdeasHistory) ? meta.videoIdeasHistory : [];
+  const planHistory = Array.isArray(meta.planHistory) ? meta.planHistory : [];
+
+  const fromIdeas = ideasHistory.flatMap(h => h.ideas || []).map(idea => ({ title: idea.title, icon: '💡' }));
+  const fromPlan = planHistory.flatMap(h => h.plan || []).map(p => ({ title: p.title, icon: '📅' }));
+  const allPicks = [...fromIdeas, ...fromPlan];
+
+  if (allPicks.length === 0) return;
   document.getElementById('ideaPickerLabel').style.display = 'block';
   const row = document.getElementById('ideaPickerRow');
-  row.innerHTML = allIdeas.slice(0, 4).map((idea, i) => `<div class="idea-pick" data-title="${encodeURIComponent(idea.title)}">💡 ${idea.title}</div>`).join('');
+  row.innerHTML = allPicks.slice(0, 6).map((pick) => `<div class="idea-pick" data-title="${encodeURIComponent(pick.title)}">${pick.icon} ${pick.title}</div>`).join('');
   row.querySelectorAll('.idea-pick').forEach(el => {
     el.addEventListener('click', () => { document.getElementById('topicInput').value = decodeURIComponent(el.dataset.title); });
   });
@@ -240,6 +245,11 @@ window.addEventListener('load', async function () {
     renderIdeaPicker();
     renderUsage();
     renderHistory();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const topicFromUrl = urlParams.get('topic');
+    if (topicFromUrl) { document.getElementById('topicInput').value = topicFromUrl; }
+
     document.getElementById('dashShell').classList.add('ready');
     // Az anim-in animaciokat csak MOST inditjuk ujra, hogy ne "lathatatlanul" jatszodjanak le
     // a konteneren mig az opacity:0 volt (Clerk betoltese alatt).
