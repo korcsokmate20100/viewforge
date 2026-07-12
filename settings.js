@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS = {
   font: 'default',
   theme: 'dark',
   animations: true,
-  animatedBg: false,
+  animatedBg: true,
 };
 
 function applySettings(settings){
