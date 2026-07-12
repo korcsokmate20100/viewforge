@@ -396,3 +396,24 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
 .toast.out{animation:toastOut .3s ease both;}
 .toast.error{border-left-color:var(--hot);}
 .toast.success{border-left-color:var(--mint);}
+
+/* ============ Mobil finomhangolás ============ */
+@media (max-width:640px){
+  .dash-top{flex-wrap:wrap;gap:10px;}
+  .dash-tabs{gap:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+  .dash-tab{margin-right:0;white-space:nowrap;font-size:12.5px;}
+  .player-card{padding:20px;gap:16px;}
+  .player-avatar-wrap{width:56px;height:56px;}
+  .player-name{font-size:19px;}
+  .edit-profile-form{min-width:0;width:100%;max-width:none;}
+  .stats-strip{gap:18px;}
+  .bar-row{grid-template-columns:92px 1fr 22px;gap:8px;}
+  .bar-label{font-size:11px;}
+  .badge-grid{grid-template-columns:repeat(2,1fr);}
+  .settings-overlay{padding:16px;align-items:flex-end;justify-content:center;}
+  .settings-panel{max-width:100%;}
+  .profile-sub-card{padding:16px 18px;}
+  .toast-container{left:16px;right:16px;bottom:16px;max-width:none;}
+  .pc-identity{gap:10px;}
+  .pc-plan{margin-left:0;width:100%;}
+}
