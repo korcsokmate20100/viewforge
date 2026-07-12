@@ -73,26 +73,26 @@
 
 <script>
 const PLANS = [
-  {id:'free', name:'Free trial', dailyLimit:5, monthlyLimit:null},
-  {id:'basic', name:'Basic', dailyLimit:null, monthlyLimit:100},
-  {id:'pro', name:'Pro', dailyLimit:null, monthlyLimit:Infinity},
+  {id:'free', name:'Free trial', monthlyLimit:10},
+  {id:'basic', name:'Basic', monthlyLimit:100},
+  {id:'pro', name:'Pro', monthlyLimit:Infinity},
 ];
 function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
+function monthStr(){ return new Date().toISOString().slice(0,7); }
 function vfMeta(){ return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {}; }
 async function saveVfMeta(partial){
   const current = vfMeta();
   await Clerk.user.update({ unsafeMetadata: { ...Clerk.user.unsafeMetadata, viewforge: { ...current, ...partial } } });
 }
-function currentUsage(meta){ return (meta.usage && meta.usage.date === todayStr()) ? meta.usage.count : 0; }
+function currentUsage(meta){ return (meta.usage && meta.usage.month === monthStr()) ? meta.usage.count : 0; }
 
 function renderUsage(){
   const meta = vfMeta();
   const info = planInfo(meta.plan || 'free');
   const used = currentUsage(meta);
-  const limitText = info.dailyLimit ? (used + ' / ' + info.dailyLimit + ' ma') : (info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó');
+  const limitText = info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó';
   document.getElementById('usagePill').textContent = limitText;
-  const atLimit = info.dailyLimit ? used >= info.dailyLimit : (info.monthlyLimit !== Infinity && used >= info.monthlyLimit);
+  const atLimit = info.monthlyLimit !== Infinity && used >= info.monthlyLimit;
   const limitMsg = document.getElementById('limitMsg');
   const btn = document.getElementById('generateBtn');
   if (atLimit){ limitMsg.style.display = 'block'; limitMsg.textContent = `Elérted a(z) ${info.name} csomag limitjét. Válts nagyobb csomagra a dashboardon.`; btn.disabled = true; }
@@ -105,7 +105,7 @@ async function incrementUsage(){
   const totalXp = (meta.totalGenerations || 0) + 1;
   const toolUsage = { ...(meta.toolUsage || {}) };
   toolUsage.script = (toolUsage.script || 0) + 1;
-  await saveVfMeta({ usage: { count: used + 1, date: todayStr() }, totalGenerations: totalXp, toolUsage });
+  await saveVfMeta({ usage: { count: used + 1, month: monthStr() }, totalGenerations: totalXp, toolUsage });
 }
 
 function renderIdeaPicker(){
@@ -235,6 +235,7 @@ window.addEventListener('load', async function () {
 
     const meta = vfMeta();
     if (!meta.creatorProfile) { window.location.href = 'dashboard.html'; return; }
+    if ((meta.plan || 'free') === 'free') { window.location.href = 'dashboard.html'; return; }
 
     renderIdeaPicker();
     renderUsage();

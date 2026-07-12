@@ -76,7 +76,7 @@
             <div class="psc-label">⚡ Csomagod</div>
             <div class="pc-plan">
               <span class="plan-bar-badge" id="planBadge">Free trial</span>
-              <span class="pc-usage"><b id="usageText">0</b>/<span id="usageLimitText">5</span> ma</span>
+              <span class="pc-usage"><b id="usageText">0</b>/<span id="usageLimitText">10</span> hó</span>
             </div>
             <div class="plan-switch-row" id="planSwitchRow"></div>
           </div>
@@ -126,32 +126,33 @@
 
       <div class="dash-tab-panel" id="tabTools" style="display:none;">
         <div class="tools-nav-grid">
-          <a class="tool-nav-card anim-in" style="animation-delay:.05s;" href="video-ideas.html">
+          <a class="tool-nav-card anim-in" style="animation-delay:.05s;" href="video-ideas.html" data-tool="videoIdeas">
             <div class="tool-ico">💡</div>
             <div class="tool-name">Video Ideas</div>
             <div class="tool-desc">Konkrét videó-ötletek a játékodhoz</div>
           </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.1s;" href="viral-titles.html">
+          <a class="tool-nav-card anim-in" style="animation-delay:.1s;" href="viral-titles.html" data-tool="titles">
             <div class="tool-ico">🔥</div>
             <div class="tool-name">Viral Titles</div>
             <div class="tool-desc">Cím-variációk CTR-becsléssel</div>
           </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.15s;" href="thumbnail-ai.html">
+          <a class="tool-nav-card anim-in" style="animation-delay:.15s;" href="thumbnail-ai.html" data-tool="thumbnail">
             <div class="tool-ico">🖼</div>
             <div class="tool-name">Thumbnail AI</div>
             <div class="tool-desc">Borítókép elemzés és pontszám</div>
           </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.2s;" href="content-planner.html">
+          <a class="tool-nav-card anim-in" style="animation-delay:.2s;" href="content-planner.html" data-tool="plan">
             <div class="tool-ico">📅</div>
             <div class="tool-name">Content Planner</div>
             <div class="tool-desc">Heti tartalomterv</div>
           </a>
-          <a class="tool-nav-card anim-in" style="animation-delay:.25s;" href="video-script.html">
+          <a class="tool-nav-card anim-in" style="animation-delay:.25s;" href="video-script.html" data-tool="script">
             <div class="tool-ico">🎬</div>
             <div class="tool-name">Video Script</div>
             <div class="tool-desc">Ötletből forgatásra kész vázlat</div>
           </a>
         </div>
+        <div class="lock-msg" id="lockMsg" style="display:none;">🔒 A Free trial csomaggal csak a Video Ideas érhető el. Válts Basic vagy Pro csomagra a többi eszközhöz.</div>
       </div>
 
     </div>
@@ -167,9 +168,9 @@
 
 <script>
 const PLANS = [
-  {id:'free', name:'Free trial', dailyLimit:5, monthlyLimit:null},
-  {id:'basic', name:'Basic', dailyLimit:null, monthlyLimit:100},
-  {id:'pro', name:'Pro', dailyLimit:null, monthlyLimit:Infinity},
+  {id:'free', name:'Free trial', monthlyLimit:10},
+  {id:'basic', name:'Basic', monthlyLimit:100},
+  {id:'pro', name:'Pro', monthlyLimit:Infinity},
 ];
 function planInfo(id){ return PLANS.find(p => p.id === id) || PLANS[0]; }
 
@@ -251,7 +252,7 @@ async function createProfile(){
       mainGame: game,
       styles: selectedStyles,
     },
-    usage: { count: 0, date: new Date().toISOString().slice(0,10) },
+    usage: { count: 0, month: new Date().toISOString().slice(0,7) },
   });
   renderDashboard();
 }
@@ -299,10 +300,10 @@ function renderDashboard(){
     row.appendChild(el);
   });
 
-  const today = new Date().toISOString().slice(0,10);
-  const usage = (meta.usage && meta.usage.date === today) ? meta.usage.count : 0;
+  const thisMonth = new Date().toISOString().slice(0,7);
+  const usage = (meta.usage && meta.usage.month === thisMonth) ? meta.usage.count : 0;
   document.getElementById('usageText').textContent = usage;
-  document.getElementById('usageLimitText').textContent = info.dailyLimit ? info.dailyLimit : (info.monthlyLimit === Infinity ? '∞' : info.monthlyLimit + '/hó');
+  document.getElementById('usageLimitText').textContent = info.monthlyLimit === Infinity ? '∞' : info.monthlyLimit;
 
   const avatarUrl = profile.thumbnail || Clerk.user.imageUrl;
   if (avatarUrl){
@@ -319,6 +320,25 @@ function renderDashboard(){
   renderBadges(meta);
   renderActivityFeed(meta);
   setupProfileEditor(profile);
+  updateToolAccess(meta.plan || 'free');
+}
+
+function updateToolAccess(planId){
+  const isLocked = planId === 'free';
+  document.getElementById('lockMsg').style.display = isLocked ? 'block' : 'none';
+  document.querySelectorAll('.tool-nav-card').forEach(card => {
+    const allowed = !isLocked || card.dataset.tool === 'videoIdeas';
+    card.classList.toggle('soon', !allowed);
+    if (!allowed){
+      card.addEventListener('click', blockLockedTool);
+    } else {
+      card.removeEventListener('click', blockLockedTool);
+    }
+  });
+}
+function blockLockedTool(e){
+  e.preventDefault();
+  alert('Ez az eszköz a Basic vagy Pro csomagtól érhető el. Válts csomagot a Profilom fülön!');
 }
 
 const TOOL_META = [
