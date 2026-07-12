@@ -304,7 +304,7 @@ function renderDashboard(){
   document.getElementById('usageText').textContent = usage;
   document.getElementById('usageLimitText').textContent = info.dailyLimit ? info.dailyLimit : (info.monthlyLimit === Infinity ? '∞' : info.monthlyLimit + '/hó');
 
-  const avatarUrl = Clerk.user.imageUrl || profile.thumbnail;
+  const avatarUrl = profile.thumbnail || Clerk.user.imageUrl;
   if (avatarUrl){
     document.getElementById('channelThumb').src = avatarUrl;
     document.getElementById('channelThumb').style.display = 'block';
