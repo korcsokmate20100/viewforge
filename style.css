@@ -37,17 +37,16 @@ html[data-animations="off"] *{
 
 /* Animált háttér — a beállítás-panelból kapcsolható */
 @keyframes bgDrift{
-  0%,100%{background-position:0% 0%, 100% 0%, 50% 100%;}
-  50%{background-position:15% 12%, 85% 15%, 55% 88%;}
+  0%,100%{background-position:0% 0%, 100% 100%;}
+  50%{background-position:25% 20%, 75% 80%;}
 }
 html[data-animated-bg="on"] body{
   background-image:
-    radial-gradient(circle at 10% 15%, rgba(155,95,255,0.16), transparent 42%),
-    radial-gradient(circle at 90% 25%, rgba(255,77,141,0.12), transparent 42%),
-    radial-gradient(circle at 50% 90%, rgba(61,220,151,0.10), transparent 45%);
-  background-size:180% 180%;
+    radial-gradient(circle at 0% 0%, rgba(155,95,255,0.17), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(255,77,141,0.14), transparent 55%);
+  background-size:170% 170%;
   background-attachment:fixed;
-  animation:bgDrift 22s ease-in-out infinite;
+  animation:bgDrift 20s ease-in-out infinite;
 }
 
 *{box-sizing:border-box;}

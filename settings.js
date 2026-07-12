@@ -57,7 +57,12 @@ async function initSettingsPanel(){
   gear.id = 'settingsBtn';
   gear.title = 'Beállítások';
   gear.textContent = '⚙️';
-  userBtn.parentNode.insertBefore(gear, userBtn);
+  const navRightWrap = document.createElement('div');
+  navRightWrap.style.display = 'flex';
+  navRightWrap.style.alignItems = 'center';
+  userBtn.parentNode.insertBefore(navRightWrap, userBtn);
+  navRightWrap.appendChild(gear);
+  navRightWrap.appendChild(userBtn);
 
   const overlay = document.createElement('div');
   overlay.className = 'settings-overlay';
