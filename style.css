@@ -417,3 +417,14 @@ footer{border-top:1px solid var(--line);padding:40px 0;color:var(--text-dim);fon
   .pc-identity{gap:10px;}
   .pc-plan{margin-left:0;width:100%;}
 }
+
+/* ============ GYIK (FAQ) ============ */
+.faq-list{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+.faq-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 22px;transition:border-color .25s ease;}
+.faq-item:hover{border-color:#4a3f5c;}
+.faq-item[open]{border-color:var(--brand);}
+.faq-item summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.faq-item summary::-webkit-details-marker{display:none;}
+.faq-item summary::after{content:"+";font-size:20px;color:var(--brand);flex-shrink:0;transition:transform .25s ease;font-family:'Space Grotesk',sans-serif;}
+.faq-item[open] summary::after{transform:rotate(45deg);}
+.faq-item p{margin:14px 0 0;color:var(--text-dim);font-size:14px;line-height:1.65;}
