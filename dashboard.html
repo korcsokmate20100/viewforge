@@ -251,16 +251,35 @@ async function saveVfMeta(partial){
   });
 }
 
+/** A csomag és a felhasznalt mennyiseg a publicMetadata-ban el — ezt a bongeszo NEM
+    tudja kozvetlenul atirni, csak a szerver (a /api/set-plan es a generalo function-ok). */
+function vfPublic(){
+  return (Clerk.user.publicMetadata && Clerk.user.publicMetadata.viewforge) || {};
+}
+async function setPlan(planId){
+  const token = await Clerk.session.getToken();
+  const res = await fetch('/api/set-plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ plan: planId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Nem sikerült a csomagváltás.');
+  await Clerk.user.reload();
+}
+
 async function createProfile(){
   const game = document.getElementById('mainGameInput').value.trim();
   if (!game){ showToast('Add meg a fő játékodat!', 'error'); return; }
   const channel = window.__foundChannel || {};
 
   const params = new URLSearchParams(window.location.search);
-  const plan = vfMeta().plan || params.get('plan') || 'free';
+  const requestedPlan = params.get('plan');
+  if (requestedPlan && ['free','basic','pro'].includes(requestedPlan)) {
+    try { await setPlan(requestedPlan); } catch (e) { console.error(e); }
+  }
 
   await saveVfMeta({
-    plan,
     creatorProfile: {
       channelName: channel.name,
       thumbnail: channel.thumbnail,
@@ -269,7 +288,6 @@ async function createProfile(){
       mainGame: game,
       styles: selectedStyles,
     },
-    usage: { count: 0, month: new Date().toISOString().slice(0,7) },
   });
   renderDashboard();
 }
@@ -301,24 +319,30 @@ function renderDashboard(){
 
   document.getElementById('userName').textContent = ', ' + (Clerk.user.firstName || Clerk.user.username || '') + '!';
 
-  const info = planInfo(meta.plan || 'free');
+  const pub = vfPublic();
+  const info = planInfo(pub.plan || 'free');
   document.getElementById('planBadge').textContent = info.name;
 
   const row = document.getElementById('planSwitchRow');
   row.innerHTML = '';
   PLANS.forEach(p => {
     const el = document.createElement('div');
-    el.className = 'plan-pill' + (p.id === (meta.plan || 'free') ? ' active' : '');
+    el.className = 'plan-pill' + (p.id === (pub.plan || 'free') ? ' active' : '');
     el.textContent = p.name;
     el.addEventListener('click', async () => {
-      await saveVfMeta({ plan: p.id });
-      renderDashboard();
+      try {
+        await setPlan(p.id);
+        renderDashboard();
+        showToast(`Átváltva: ${p.name} csomag`, 'success');
+      } catch (e) {
+        showToast('Nem sikerült a csomagváltás: ' + e.message, 'error');
+      }
     });
     row.appendChild(el);
   });
 
   const thisMonth = new Date().toISOString().slice(0,7);
-  const usage = (meta.usage && meta.usage.month === thisMonth) ? meta.usage.count : 0;
+  const usage = (pub.usage && pub.usage.month === thisMonth) ? pub.usage.count : 0;
   document.getElementById('usageText').textContent = usage;
   document.getElementById('usageLimitText').textContent = info.monthlyLimit === Infinity ? '∞' : info.monthlyLimit;
 
@@ -338,7 +362,7 @@ function renderDashboard(){
   renderActivityFeed(meta);
   renderAiTips(meta);
   setupProfileEditor(profile);
-  updateToolAccess(meta.plan || 'free');
+  updateToolAccess(pub.plan || 'free');
 }
 
 function updateToolAccess(planId){

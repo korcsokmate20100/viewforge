@@ -110,6 +110,10 @@ function currentUsage(meta){
 function vfMeta(){
   return (Clerk.user.unsafeMetadata && Clerk.user.unsafeMetadata.viewforge) || {};
 }
+function vfPublic(){
+  return (Clerk.user.publicMetadata && Clerk.user.publicMetadata.viewforge) || {};
+}
+
 async function saveVfMeta(partial){
   const current = vfMeta();
   await Clerk.user.update({
@@ -121,9 +125,9 @@ async function saveVfMeta(partial){
 }
 
 function renderUsage(){
-  const meta = vfMeta();
-  const info = planInfo(meta.plan || 'free');
-  const used = currentUsage(meta);
+  const pub = vfPublic();
+  const info = planInfo(pub.plan || 'free');
+  const used = currentUsage(pub);
   const limitText = info.monthlyLimit === Infinity ? used + ' / ∞' : used + ' / ' + info.monthlyLimit + ' hó';
   document.getElementById('usagePill').textContent = limitText;
 
@@ -143,11 +147,11 @@ function renderUsage(){
 
 async function incrementUsage(){
   const meta = vfMeta();
-  const used = currentUsage(meta);
   const totalXp = (meta.totalGenerations || 0) + 1;
   const toolUsage = { ...(meta.toolUsage || {}) };
   toolUsage.videoIdeas = (toolUsage.videoIdeas || 0) + 1;
-  await saveVfMeta({ usage: { count: used + 1, month: monthStr() }, totalGenerations: totalXp, toolUsage });
+  await saveVfMeta({ totalGenerations: totalXp, toolUsage });
+  await Clerk.user.reload();
 }
 
 function renderIdeas(ideas){
